@@ -1,0 +1,35 @@
+# 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
+name: tom github test action 1
+
+
+# 下文含义为 *******************************************
+#     当 master 分支发生 push 事件时针对 paths 
+#     中指定的文件执行 jobs(作业)
+# *****************************************************
+on: # 触发工作流程的 GitHub 事件的名称。
+  push:
+    branches:
+      - master
+    paths:
+      - 'posts/*.md'
+      - 'posts/*/*.md'
+      - 'posts/*/*/*.md'
+
+# 工作流程运行包括一项或多项作业。 
+# 作业默认是并行运行。 
+# 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
+jobs:
+  git-issues-blog: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
+                   # 在本文中对应的就是 git-issues-blog.py 作业配置
+
+    runs-on: [self-hosted, linux]
+
+    steps: # 一个 job(作业) 可以分为若干 step(步骤)
+    - uses: actions/checkout@v1
+      with:
+        ref: master
+    - name: Publish Issues # 步骤显示在 GitHub 上的名称。
+      uses: ./
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        POSTS_PATH: 'posts'
