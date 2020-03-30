@@ -1,5 +1,5 @@
 # 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-name: tom github test action 1
+name: tom github test action 2
 
 
 # 下文含义为 *******************************************
@@ -22,7 +22,7 @@ jobs:
   git_action_practice: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
                    # 在本文中对应的就是 git-issues-blog.py 作业配置
 
-    runs-on: [self-hosted, macos]
+    runs-on: [ubuntu-latest]
 
     steps: # 一个 job(作业) 可以分为若干 step(步骤)
     # 检出(获取)这个仓库的一个release 版本
