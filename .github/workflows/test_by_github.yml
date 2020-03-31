@@ -7,8 +7,6 @@ name: test_by_github
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -31,3 +29,9 @@ jobs:
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
+
+    - name: Run `echo` commend
+      run: echo "咚巴拉"
+
+    - name: Run `ls` commend
+      run: ls -l
