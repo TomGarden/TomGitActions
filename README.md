@@ -4,6 +4,5 @@
     - pull 到本地， 删除 GitHub 创建的 yaml 再次 push ， 观察到 actions 列表中的 actions 并没有消失
     - 恢复刚删除的 yaml 文件
     - 拷贝一个副本， 修改 yaml 中关于 action 命名代码， 执行 push
-        - GitHub actions 列表里并没有如预期般增加一个新的的 action
-        
-3. 总之优点惆怅就是了， **明天在读一次文档吧， 检查下哪里有忽略的内容或者操作吧**。        
+        - 重新点击 Actions 标签， 即可看到新的 action
+3. 所以接下来我们需要了解语法细节了，因为自托管的 action ，没有出现在 Actions 列表中，也没有执行
