@@ -10,10 +10,6 @@ on: # 触发工作流程的 GitHub 事件的名称。
   push:
     branches:
       - master
-    paths:
-      - 'posts/*.md'
-      - 'posts/*/*.md'
-      - 'posts/*/*/*.md'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
