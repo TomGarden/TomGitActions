@@ -10,11 +10,11 @@ on: # 触发工作流程的 GitHub 事件的名称。
   push:
     branches:
       - master
-    paths:
-      # 路径名错误会导致执行失败，并且没有提示的执行失败
-      - 'posts/*.md'
-      - 'posts/*/*.md'
-      - 'posts/*/*/*.md'
+#    paths:
+#      # 路径名错误会导致执行失败，并且没有提示的执行失败
+#      - 'posts/*.md'
+#      - 'posts/*/*.md'
+#      - 'posts/*/*/*.md'
 
 # 工作流程运行包括一项或多项作业。
 # 作业默认是并行运行。
