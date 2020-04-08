@@ -15,28 +15,30 @@ on: # 触发工作流程的 GitHub 事件的名称。
       - 'posts/*/*.md'
       - 'posts/*/*/*.md'
 
-# 工作流程运行包括一项或多项作业。 
-# 作业默认是并行运行。 
-# 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  git_action_practice: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
-                   # 在本文中对应的就是 git-issues-blog.py 作业配置
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
 
-    runs-on: [ubuntu-latest]
-
-    steps: # 一个 job(作业) 可以分为若干 step(步骤)
-    # 检出(获取)这个仓库的一个release 版本
-#    - uses: tomgarden/TomGitActionss@6f21160db16cb5a4bd2e35306f5162657fbe27b5
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-      # 定义环境变量
-      with:
-        ref: master
+
+    # Runs a single command using the runners shell
+    - name: Run a one-line script
+      run: echo Hello, world!
+
+    # Runs a set of commands using the runners shell
+    - name: Run a multi-line script
+      run: |
+        echo Add other actions to build,
+        echo test, and deploy your project.
+
     - name: Run `echo` commend
       run: echo "咚巴拉"
+
     - name: Run `ls` commend
       run: ls -l
-    - name: Publish Issues # 步骤显示在 GitHub 上的名称。
-      uses: ./
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        POSTS_PATH: 'posts'
