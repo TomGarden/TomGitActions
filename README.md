@@ -8,6 +8,24 @@
 3. 所以接下来我们需要了解语法细节了，因为自托管的 action ，没有出现在 Actions 列表中，也没有执行
 
 
+## 参数释义
+- jobs.<job_id>.steps.uses
+- {owner}/{repo}@{ref}
+
+```
+steps:    
+  - uses: actions/setup-node@74bc508 # Reference a specific commit
+  - uses: actions/setup-node@v1      # Reference the major version of a release   
+  - uses: actions/setup-node@v1.2    # Reference a minor version of a release  
+  - uses: actions/setup-node@master  # Reference a branch
+*****************************************************************************
+steps:    
+  - uses: TomGarden/TomGitActions@74bc508 # Reference a specific commit
+  - uses: TomGarden/TomGitActions@v1      # Reference the major version of a release   
+  - uses: TomGarden/TomGitActions@v1.2    # Reference a minor version of a release  
+  - uses: TomGarden/TomGitActions@master  # Reference a branch
+```
+
 ## 快链
 - [自托管](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
 
