@@ -6,3 +6,12 @@
     - 拷贝一个副本， 修改 yaml 中关于 action 命名代码， 执行 push
         - 重新点击 Actions 标签， 即可看到新的 action
 3. 所以接下来我们需要了解语法细节了，因为自托管的 action ，没有出现在 Actions 列表中，也没有执行
+
+
+## 快链
+- [自托管](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
+
+
+## 自托管错误列表
+- paths 节点写的路径名错误导致 GitHub 站点不展示我们的工作流，这个错误没有任何异常，一句一句测出来的。
+
