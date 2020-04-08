@@ -20,7 +20,7 @@ on: # 触发工作流程的 GitHub 事件的名称。
 # 作业默认是并行运行。 
 # 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
 jobs:
-  git_action_practice: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
+  build: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
                    # 在本文中对应的就是 git-issues-blog.py 作业配置
 
     runs-on: [self-hosted, macos]
