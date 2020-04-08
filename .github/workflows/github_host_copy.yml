@@ -1,19 +1,14 @@
-# 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-name: github_host_copy
+# This is a basic workflow to help you get started with Actions
 
+name: CI-copy
 
-# 下文含义为 *******************************************
-#     当 master 分支发生 push 事件时针对 paths
-#     中指定的文件时执行 jobs(作业)
-# *****************************************************
-on: # 触发工作流程的 GitHub 事件的名称。
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
   push:
-    branches:
-      - master
-    paths:
-      - 'posts/*.md'
-      - 'posts/*/*.md'
-      - 'posts/*/*/*.md'
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -36,9 +31,3 @@ jobs:
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
-
-    - name: Run `echo` commend
-      run: echo "咚巴拉"
-
-    - name: Run `ls` commend
-      run: ls -l
