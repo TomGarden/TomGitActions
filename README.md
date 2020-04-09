@@ -9,6 +9,11 @@
 3. 所以接下来我们需要了解语法细节了，因为自托管的 action ，没有出现在 Actions 列表中，也没有执行
 4. 现在 github-host 可以运行，self-host 的无法运行这个问题需要解决，否则调试不方便
     - 现象是 self-host 的都在队列中但是不执行
+    - 尝试到本地日志文件查找端倪
+        - 日志文件名字为 ： `Runner_20200409-014420-utc` 
+        - 定位字段之后的日志即为异常：`[2020-04-09 04:55:46Z INFO SelfUpdater] Download runner: begin download`
+        - 这个异常是在执行 [再次测试 self-host](https://github.com/TomGarden/TomGitActions/actions/runs/74114980) 的时候出现的
+    - 别忘了更新[自己的提问帖](https://github.community/t5/GitHub-Actions/self-host-block-on-Starting-your-workflow-run/m-p/53309/highlight/false#M8781)
 
 ## 参数释义
 - jobs.<job_id>.steps.uses
@@ -40,4 +45,7 @@ steps:
         `
 - Could not find file '/home/runner/work/_actions/_temp_17ef85be-8371-4695-be54-0df83e36a30f/_staging/TomGarden-TomGitActions-c276e39/venv/bin/python3`
     - 这时在使用 idea 创建的 Python 项目的文件夹，把这个文件忽略掉就没问题了
+    
+- 自托管工作流不执行可以到本地日志文件查找问题
+    - [Reviewing a job's log file](https://help.github.com/cn/actions/hosting-your-own-runners/monitoring-and-troubleshooting-self-hosted-runners#reviewing-a-jobs-log-file)
 
