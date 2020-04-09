@@ -1,3 +1,4 @@
+## 进度
 1. 尝试直接在本地创建 yaml 文件并设置 py 文件与之关联。
     - 但是上传代码后 actions 列表中没有任何内容
 2. 通过 GitHub 引导创建一个 yaml 文件后 actions 中成功出现合法 action
@@ -6,7 +7,8 @@
     - 拷贝一个副本， 修改 yaml 中关于 action 命名代码， 执行 push
         - 重新点击 Actions 标签， 即可看到新的 action
 3. 所以接下来我们需要了解语法细节了，因为自托管的 action ，没有出现在 Actions 列表中，也没有执行
-
+4. 现在 github-host 可以运行，self-host 的无法运行这个问题需要解决，否则调试不方便
+    - 现象是 self-host 的都在队列中但是不执行
 
 ## 参数释义
 - jobs.<job_id>.steps.uses
@@ -36,5 +38,6 @@ steps:
 - 替换 uses 字段为 `TomGarden/TomGitActions@master` 之后自托管阻塞， GitHub-host 失败
     - 尝试修改项目为公开再试仍然报错
         `
-Could not find file '/home/runner/work/_actions/_temp_17ef85be-8371-4695-be54-0df83e36a30f/_staging/TomGarden-TomGitActions-c276e39/venv/bin/python3`
+- Could not find file '/home/runner/work/_actions/_temp_17ef85be-8371-4695-be54-0df83e36a30f/_staging/TomGarden-TomGitActions-c276e39/venv/bin/python3`
+    - 这时在使用 idea 创建的 Python 项目的文件夹，把这个文件忽略掉就没问题了
 
