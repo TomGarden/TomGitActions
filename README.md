@@ -10,8 +10,8 @@
 4. 现在 github-host 可以运行，self-host 的无法运行这个问题需要解决，否则调试不方便
     - 现象是 self-host 的都在队列中但是不执行
     - 尝试到本地日志文件查找端倪
-        - 日志文件名字为 ： `Runner_20200409-014420-utc` 
-        - 定位字段之后的日志即为异常：`[2020-04-09 04:55:46Z INFO SelfUpdater] Download runner: begin download`
+        - 日志文件名字为 ： `Runner_20200409-080001-utc` 
+        - 定位字段之后的日志即为异常：`[2020-04-09 12:38:55Z WARN GitHubActionsService] Retrieving an AAD auth token took a long time (2.1094582 seconds)`
         - 这个异常是在执行 [再次测试 self-host](https://github.com/TomGarden/TomGitActions/actions/runs/74114980) 的时候出现的
     - 别忘了更新[自己的提问帖](https://github.community/t5/GitHub-Actions/self-host-block-on-Starting-your-workflow-run/m-p/53309/highlight/false#M8781)
 
