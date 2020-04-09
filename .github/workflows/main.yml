@@ -27,7 +27,7 @@ jobs:
 
     steps: # 一个 job(作业) 可以分为若干 step(步骤)
     # 检出(获取)这个仓库的一个release 版本
-    - uses: TomGarden/TomGitActions@master
+    - uses: actions/checkout@v2
 
     - name: Run a one-line script
       run: echo Hello, world!!!!!!!!!
