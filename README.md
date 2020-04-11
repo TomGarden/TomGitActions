@@ -15,6 +15,7 @@
         - 这个异常是在执行 [再次测试 self-host](https://github.com/TomGarden/TomGitActions/actions/runs/74114980) 的时候出现的
     - 别忘了更新[自己的提问帖](https://github.community/t5/GitHub-Actions/self-host-block-on-Starting-your-workflow-run/m-p/53309/highlight/false#M8781)
     - 尝试手动下载文件，文件下载位置应该是错误了，这么做无效
+    - 尝试手动下载并下载旧版本重新安装新版本后再试一次
 
 ## 参数释义
 - jobs.<job_id>.steps.uses
