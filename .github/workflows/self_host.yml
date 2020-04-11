@@ -31,9 +31,7 @@ jobs:
 
     - name: Run a one-line script
       run: echo Hello, world!!!!!!!!!
-      # 定义环境变量
-      with:
-        ref: master
+
     - name: Publish Issues # 步骤显示在 GitHub 上的名称。
       uses: ./
       env:
