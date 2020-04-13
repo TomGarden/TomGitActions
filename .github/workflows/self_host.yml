@@ -28,12 +28,11 @@ jobs:
     steps: # 一个 job(作业) 可以分为若干 step(步骤)
     # 检出(获取)这个仓库的一个release 版本
     - uses: actions/checkout@v2
-
-    - name: Run a one-line script
-      run: echo Hello, world!!!!!!!!!
-
+      # 定义环境变量
+      with:
+        ref: master
     - name: Publish Issues # 步骤显示在 GitHub 上的名称。
-      uses: ./
+      uses: ./.github/github_actions/Dockerfile
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         POSTS_PATH: 'posts'
