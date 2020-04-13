@@ -32,7 +32,7 @@ jobs:
       with:
         ref: master
     - name: Publish Issues # 步骤显示在 GitHub 上的名称。
-      uses: ./.github/github_actions/Dockerfile
+      uses: ./.github/github_actions/
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         POSTS_PATH: 'posts'
