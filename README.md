@@ -38,6 +38,7 @@ steps:
 ## 快链
 - [自托管](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
 - [Docker](https://docs.docker.com/engine/reference/builder/)
+- [self-host 使用 docker 只支持 Linux 平台](https://help.github.com/cn/actions/building-actions/creating-a-docker-container-action)
 
 
 ## 自托管错误列表
