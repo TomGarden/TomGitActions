@@ -36,8 +36,11 @@ jobs:
         echo "========================================"
         brew --version
         echo "========================================"
-        ls -l
+        pwd
         echo "========================================"
+        whoami
+        echo "========================================"
+        bash ./.github/github_actions/test_shell.sh
 
 #    - name: Publish Issues # 步骤显示在 GitHub 上的名称。
 #      uses: ./.github/github_actions/
