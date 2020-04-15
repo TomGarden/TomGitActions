@@ -36,9 +36,15 @@ steps:
 ```
 
 ## 快链
+- [任务记录追踪](https://trello.com/b/5PH6gxbZ/队列)
 - [自托管](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
 - [Docker](https://docs.docker.com/engine/reference/builder/)
 - [self-host 使用 docker 只支持 Linux 平台](https://help.github.com/cn/actions/building-actions/creating-a-docker-container-action)
+- [shell 教程](https://www.gnu.org/software/bash/manual/)
+    - 《linux shell脚本攻略》
+- [Mac 换源](https://lug.ustc.edu.cn/wiki/mirrors/help/brew.git)
+    - [Mac 换源 2](https://www.zhihu.com/question/31360766)
+
 
 
 ## 自托管错误列表

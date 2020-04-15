@@ -32,15 +32,7 @@ jobs:
       with:
         ref: master
     - name: Install dependencies
-      run: |
-        echo "========================================"
-        brew --version
-        echo "========================================"
-        pwd
-        echo "========================================"
-        whoami
-        echo "========================================"
-        bash ./.github/github_actions/test_shell.sh
+      run: bash ./.github/github_actions/dependence.sh
 
 #    - name: Publish Issues # 步骤显示在 GitHub 上的名称。
 #      uses: ./.github/github_actions/
