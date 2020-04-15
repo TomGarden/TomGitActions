@@ -43,11 +43,11 @@ jobs:
     runs-on: [self-hosted, macos]
 
     steps: # 一个 job(作业) 可以分为若干 step(步骤)
-#    # 检出(获取)这个仓库的一个release 版本
-#    - uses: actions/checkout@v2
-#      # 定义环境变量
-#      with:
-#        ref: master
+    # 检出(获取)这个仓库的一个release 版本
+    - uses: actions/checkout@v2
+      # 定义环境变量
+      with:
+        ref: master
 
     - name: Publish Issues
       uses: ./.github/github_actions/git_action_practice.py
