@@ -50,7 +50,7 @@ jobs:
         ref: master
 
     - name: Publish Issues
-      uses: ./.github/github_actions/git_action_practice.py
+      uses: python ./.github/github_actions/git_action_practice.py
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         POSTS_PATH: 'posts'
