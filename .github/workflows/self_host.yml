@@ -27,12 +27,12 @@ jobs:
 
     steps: # 一个 job(作业) 可以分为若干 step(步骤)
       # 检出(获取)这个仓库的一个release 版本
-      - uses: actions/checkout@v2
-        # 定义环境变量
-        with:
-          ref: master
-      - name: Install dependencies # 步骤显示在 GitHub 上的名称。
-        run: bash ./.github/github_actions/dependence.sh
+    - uses: actions/checkout@v2
+      # 定义环境变量
+      with:
+        ref: master
+    - name: Install dependencies # 步骤显示在 GitHub 上的名称。
+      run: bash ./.github/github_actions/dependence.sh
 
 
   call_python_script: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
