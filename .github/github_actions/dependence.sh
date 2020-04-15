@@ -4,11 +4,11 @@
 # 当前不足之处在于无法返回安装结果，默认为安装成功
 function install_one_app() {
   if [ -x `command -v $1` ]; then
-    echo "$1 has installed"
+    echo "「$1」 has installed"
   else
-    printf "begin install %s ......................................................... \n" "$1"
+    printf "begin install 「%s」 ......................................................... \n" "$1"
     brew install "$1"
-    printf "install %s DONE ......................................................... \n" "$1"
+    printf "install 「%s」 DONE ......................................................... \n" "$1"
   fi
 }
 
