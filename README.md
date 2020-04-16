@@ -44,6 +44,9 @@ steps:
     - 《linux shell脚本攻略》
 - [Mac 换源](https://lug.ustc.edu.cn/wiki/mirrors/help/brew.git)
     - [Mac 换源 2](https://www.zhihu.com/question/31360766)
+- [Python](https://docs.python.org/zh-cn/3/)
+    - [python 代码风格指南](https://www.python.org/dev/peps/pep-0008/)
+        - [某个中文版本](https://pythonguidecn.readthedocs.io/zh/latest/writing/style.html#pep-8)
 
 
 
