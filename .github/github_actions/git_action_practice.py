@@ -25,9 +25,30 @@ POSTS = []
 CHANGED = []
 
 # github object
-g = Github(GITHUB_TOKEN)
-github_obj = Github()
-repo = g.get_repo(GITHUB_REPO)
+github_obj = Github(GITHUB_TOKEN)
+repo = github_obj.get_repo(GITHUB_REPO)
 
-print("卖报的小行家")
-print(os.environ)
+# local dictionary
+dictionary = {}
+index = pathlib.Path(POST_INDEX_FILE)
+print(index)
+if index.exists():
+    print("TomLog >>> index exists")
+    try:
+        with open(POST_INDEX_FILE, encoding='utf-8', mode='r') as f:
+            dictionary = json.load(f)
+        # lastcommit = dictionary['__commit__']
+        # command = "git diff --name-only -z " + lastcommit
+        # changed = subprocess.check_output(['git', 'diff', '--name-only', '-z', lastcommit])
+        # for x in changed.split(b'\x00'):
+        #     if x.decode('utf-8'):
+        #         CHANGED.append(x.decode('utf-8'))
+        f.close()
+    except Exception as e:
+        print('%s load error: %s' % (POST_INDEX_FILE, e))
+        exit(-1)
+
+else:
+    print("TomLog >>> index not exists")
+
+print(dictionary)
