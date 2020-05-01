@@ -1,4 +1,4 @@
-## 进度
+## 0x00. 进度
 1. 尝试直接在本地创建 yaml 文件并设置 py 文件与之关联。
     - 但是上传代码后 actions 列表中没有任何内容
 2. 通过 GitHub 引导创建一个 yaml 文件后 actions 中成功出现合法 action
@@ -17,7 +17,7 @@
     - 尝试手动下载文件，文件下载位置应该是错误了，这么做无效
     - 尝试手动下载并下载旧版本重新安装新版本后再试一次
 
-## 参数释义
+## 0x01. 参数释义
 - jobs.<job_id>.steps.uses
 - {owner}/{repo}@{ref}
 
@@ -35,7 +35,7 @@ steps:
   - uses: TomGarden/TomGitActions@master  # Reference a branch
 ```
 
-## 快链
+## 0x02. 快链
 - [任务记录追踪](https://trello.com/b/5PH6gxbZ/队列)
 - [自托管](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
 - [Docker](https://docs.docker.com/engine/reference/builder/)
@@ -47,10 +47,24 @@ steps:
 - [Python](https://docs.python.org/zh-cn/3/)
     - [python 代码风格指南](https://www.python.org/dev/peps/pep-0008/)
         - [某个中文版本](https://pythonguidecn.readthedocs.io/zh/latest/writing/style.html#pep-8)
+    - [PyGithub 开发文档](https://pygithub.readthedocs.io/en/latest/)
+    - [对类中的 self 的理解](https://docs.python.org/zh-cn/3/tutorial/classes.html)
+- [关于 GitHub 的访问权限](https://developer.github.com/apps/about-apps/)
+
+### 2.1. 限制须知
+1. 在编码调试阶段我们不再在本地真正运行 host-actions 而是直接使用 PyGitHub 远程操作 GitHub 仓库
+    - https://developer.github.com/v3/#rate-limiting
+        - 对于使用基本身份验证或OAuth的API请求，您每小时最多可以进行5000个请求。
+        - 对于未经身份验证的请求，速率限制允许每小时最多60个请求。 
+    - [查看当前请求限制数据](https://pygithub.readthedocs.io/en/latest/github.html#github.MainClass.Github.rate_limiting)
+        ```python
+        rateLimiting = github_obj.rate_limiting
+        print(rateLimiting)
+        ```
 
 
 
-## 自托管错误列表
+## 0x03. 自托管错误列表
 - paths 节点写的路径名错误导致 GitHub 站点不展示我们的工作流，这个错误没有任何异常，一句一句测出来的。
 - 当设置了 paths 当提交没有执行应该是 paths 中的文件没有变化，如果path 中的文件发生变化才会再次执行
 - 替换 uses 字段为 `TomGarden/TomGitActions@master` 之后自托管阻塞， GitHub-host 失败
