@@ -33,9 +33,7 @@ jobs:
         ref: master
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
-      run: |
-        chmod +x ./.github/github_actions/dependence.sh
-        bash ./.github/github_actions/dependence.sh
+      run: bash ./.github/github_actions/dependence.sh
 #
 #
 #  call_python_script: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
