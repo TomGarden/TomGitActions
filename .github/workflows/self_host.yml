@@ -34,6 +34,7 @@ jobs:
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
       run: ls -l
+
       #run: bash ./.github/github_actions/dependence.sh
 #
 #
