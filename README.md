@@ -76,3 +76,5 @@ steps:
 - 自托管工作流不执行可以到本地日志文件查找问题
     - [Reviewing a job's log file](https://help.github.com/cn/actions/hosting-your-own-runners/monitoring-and-troubleshooting-self-hosted-runners#reviewing-a-jobs-log-file)
 
+- 如果self-actions 无法运行，并且不包从，可查看 /github_action/actions-runner/_diag/*.log 获取异常原因
+    - 有两次都是因为 actions runner 自动更新失败导致的，这时候可以手动下载更新后再试
