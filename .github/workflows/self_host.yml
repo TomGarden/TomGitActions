@@ -33,7 +33,10 @@ jobs:
         ref: master
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
-      run: bash ./.github/github_actions/dependence.sh
+      #run: bash ./.github/github_actions/dependence.sh
+      run: |
+        echo "假装正在安装依赖"
+        ls -l
 
 
   call_python_script: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
