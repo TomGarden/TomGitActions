@@ -50,6 +50,7 @@ steps:
     - [PyGithub 开发文档](https://pygithub.readthedocs.io/en/latest/)
     - [对类中的 self 的理解](https://docs.python.org/zh-cn/3/tutorial/classes.html)
 - [关于 GitHub 的访问权限](https://developer.github.com/apps/about-apps/)
+- [关于 git 操作]()
 
 ### 2.1. 限制须知
 1. 在编码调试阶段我们不再在本地真正运行 host-actions 而是直接使用 PyGitHub 远程操作 GitHub 仓库
@@ -78,3 +79,20 @@ steps:
 
 - 如果self-actions 无法运行，并且不包从，可查看 /github_action/actions-runner/_diag/*.log 获取异常原因
     - 有两次都是因为 actions runner 自动更新失败导致的，这时候可以手动下载更新后再试
+    
+- 身处中国如果出现异常 `[Errno 61] Connection refused` 可以调整本地代理为全局试试
+
+
+## 0x04. 参考项目可优化方向
+1. 文件格式自动识别并读取
+2. [\\1](https://raw.githubusercontent.com/TomGarden/TomGitActions/master/../posts/\\2)
+3. 文章 header footer 中的字符串内容可以发挥 `parse_issue_tpl`
+4. 国际化
+5. 使用文档，应该分为两部分
+    - 对于某些配置项 github action 对操作着来说是透明的他也可以做出喜欢的操作实现想要的功能
+    - 某些配置是以了解 github action 为前提的
+6. 上一个 action 还没有完成的时候又发起了新的 action 会发生什么
+7. 文章内目录，所有文章总录
+8. 文件中可以设定专门的配置语句位置，可以不配置，但是如果项配置就可以配置
+9. 一切锦上添花的功能都应该是可插拔的
+10. 尽最大努力控制学习成本
