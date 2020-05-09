@@ -50,7 +50,10 @@ steps:
     - [PyGithub 开发文档](https://pygithub.readthedocs.io/en/latest/)
     - [对类中的 self 的理解](https://docs.python.org/zh-cn/3/tutorial/classes.html)
 - [关于 GitHub 的访问权限](https://developer.github.com/apps/about-apps/)
-- [关于 git 操作]()
+- [关于 git 操作](https://git-scm.com/docs):本项目着重用到的内容为
+    - [git diff --raw](https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---raw)
+        - [（git diff --raw）Raw output format](https://git-scm.com/docs/git-diff#_raw_output_format)
+    
 
 ### 2.1. 限制须知
 1. 在编码调试阶段我们不再在本地真正运行 host-actions 而是直接使用 PyGitHub 远程操作 GitHub 仓库
@@ -96,3 +99,5 @@ steps:
 8. 文件中可以设定专门的配置语句位置，可以不配置，但是如果项配置就可以配置
 9. 一切锦上添花的功能都应该是可插拔的
 10. 尽最大努力控制学习成本
+11. git diff 的一般操作已经可以 把控， 
+12. git merge 后的 diff 操作尚需详究，待到测试流程完善
