@@ -68,29 +68,35 @@ ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_di
 git_log_line_separator = "···@/@···"
 git_log_line_separator_newline = git_log_line_separator + "\n"
 git_diff_line_prefix = "///"
-git_diff_line_separator = "^@"
+git_diff_line_separator = "\x00"
 git_diff_line_separator_newline = git_diff_line_separator + "\n"
 
 
 class ModifyEnum(enum.Enum):
     """
     规范: https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-git-diff-filesltpatterngt82308203
-    A: addition of a file
-    C: copy of a file into a new one
-    D: deletion of a file
-    M: modification of the contents or mode of a file
-    R: renaming of a file
-    T: change in the type of the file
-    U: file is unmerged (you must complete the merge before it can be committed)
-    X: "unknown" change type (most probably a bug, please report it)
+
+    下述修改我们
+        知道怎么触发的标记为 [√]
+        不知道怎么触发的标记为 [x] //未成功测试处理的修改类型, 通过 git diff 文档给定的格式进行操作
+
+    [√] A: addition of a file
+    [x] C: copy of a file into a new one
+    [√] D: deletion of a file
+    [√] M: modification of the contents or mode of a file
+    [√] R: renaming of a file
+    [x] T: change in the type of the file
+    [x] U: file is unmerged (you must complete the merge before it can be committed)
+    [x] X: "unknown" change type (most probably a bug, please report it)
     """
     modify_addition = 'A'
     modify_copy = 'C'
     modify_deletion = 'D'
     modify_modification = 'M'
     modify_renaming = 'R'
-    modify_change = 'T'
-    modify_file = 'U'
+    modify_file_is_unmerged = 'U'
+
+    modify_change_type = 'T'
     modify_unknown = 'X'
 
 
@@ -109,13 +115,13 @@ github_obj = Github(login_or_token=GITHUB_TOKEN, base_url=GITHUB_API)
 repo = github_obj.get_repo(GITHUB_REPO)
 
 
-def get_commit_hash_form_commit_log_line(last_success_opt_commit_log_line) -> str:
+def get_commit_hash_form_commit_log_line(last_success_opt_commit_log_line: str) -> str:
     """
     :param last_success_opt_commit_log_line: git log 格式化输出的一行中获取 commit hash
     :return: 参数中包含的 commit hash , 为 None 表示没有有效的 commit , 表示尚未提交过任何内容
     """
 
-    if isinstance(last_success_opt_commit_log_line, None):
+    if last_success_opt_commit_log_line is None:
         return None
     else:
         if not isinstance(last_success_opt_commit_log_line, str):
@@ -124,26 +130,26 @@ def get_commit_hash_form_commit_log_line(last_success_opt_commit_log_line) -> st
     return last_success_opt_commit_log_line.split(git_log_line_separator, 1)[0]
 
 
-def get_commit_time_form_commit_log_line(last_success_opt_commit_log_line) -> str:
+def get_commit_time_form_commit_log_line(last_success_opt_commit_log_line: str) -> str:
     """
     :param last_success_opt_commit_log_line: git log 格式化输出的一行中获取 commit 的提交时间
     :return: 参数中包含的 commit 的提交时间
     """
 
-    if isinstance(last_success_opt_commit_log_line, None):
+    if last_success_opt_commit_log_line is None:
         return None
     else:
         if not isinstance(last_success_opt_commit_log_line, str):
             return None
 
     str_array: [] = last_success_opt_commit_log_line.split(git_log_line_separator, 2)
-    if str_array.count() < 2:
+    if len(str_array) < 2:
         raise Exception("入参格式异常, 获取 commit 时间失败")
 
     return str_array[1]
 
 
-def get_current_opt_commit_log_line_range(last_commit_time) -> []:
+def get_current_opt_commit_log_line_range(last_commit_time: str) -> []:
     """
     获取我们即将处理的 commit 区间, 一首一位两行格式化 commit 日志行
     核心命令: git log --pretty=format:"%H - %cd : %s" --date=format:'%Y-%m-%d %H:%M:%S %z'
@@ -160,7 +166,7 @@ def get_current_opt_commit_log_line_range(last_commit_time) -> []:
     args = ["git", "log", "--date=format:%Y-%m-%d %H:%M:%S %z",
             "--pretty=format:%H{separator}%cd{separator}%s{separator}".format(separator=git_log_line_separator)]
 
-    if isinstance(last_commit_time, None):
+    if last_commit_time is None:
         args.append("-1")
     else:
         args.append("--since='{commit_time}'".format(commit_time=last_commit_time))
@@ -170,25 +176,25 @@ def get_current_opt_commit_log_line_range(last_commit_time) -> []:
     stdout: str = completedProcess.stdout
     stderr: str = completedProcess.stderr
 
-    if isinstance(stdout, None):
+    if stdout is None:
         return None
 
     line_array: [] = stdout.split(git_log_line_separator_newline)
-    if line_array.count() <= 2:
+    if len(line_array) <= 2:
         return line_array
     else:
-        result = [line_array[0], line_array.count() - 1]
+        result = [line_array[0], len(line_array) - 1]
         return result
 
 
-def get_diff_from_commits(last_commit_hash, first_commit_hash) -> str:
+def get_diff_from_commits(after_commit_hash: str, earlier_commit_hash: str) -> []:
     """
 
     核心命令: git diff --raw -z 9a24fc6aae05744253912999e2b5ba3a7f44600f dcc69f4762b60257a281dd408d8ed701241ed13d
 
-    :param last_commit_hash: 时间上靠后的的 commit hash 值
+    :param after_commit_hash: 时间上靠后的的 commit hash 值
                              None 表示尚未处理过任何 commit
-    :param first_commit_hash:  时间上靠前的 commit hash 值
+    :param earlier_commit_hash:  时间上靠前的 commit hash 值
                              None 首次提交, 无需提供
     :return: 非空,最新的文件变化列表 ;
              如果为空意味着, repository 没有发生变化
@@ -196,13 +202,13 @@ def get_diff_from_commits(last_commit_hash, first_commit_hash) -> str:
 
     args = ["git", "diff", "--raw", "-z", "--line-prefix={line_prefix}".format(line_prefix=git_diff_line_prefix)]
 
-    if not isinstance(first_commit_hash, None):
-        args.append(first_commit_hash)
+    if earlier_commit_hash is not None:
+        args.append(earlier_commit_hash)
 
-    if isinstance(last_commit_hash, None):
+    if after_commit_hash is None:
         raise Exception("last_commit_hash 为 None ,这是异常值不接受")
     else:
-        args.append(last_commit_hash)
+        args.append(after_commit_hash)
 
     completed_process: subprocess.CompletedProcess = \
         subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -212,50 +218,71 @@ def get_diff_from_commits(last_commit_hash, first_commit_hash) -> str:
 
     git_diff_line_list: [] = stdout.split(git_diff_line_prefix)
 
-    for git_diff_line in git_diff_line_list:
-        print("测试完 git 语法后再来续写逻辑")
-        pass
+    if len(git_diff_line_list) > 0 and len(git_diff_line_list[0]) == 0:
+        git_diff_line_list = git_diff_line_list[1:]
 
-    return None
+    return git_diff_line_list
 
 
-def get_diff_from_commits(last_success_opt_commit_log_line):
+def opt_dif_line(git_diff_line: str):
     """
-        通过 git 命令从 commits 中获取最新的文件变化列表
+    操作 git diff 的返回行
 
-    :param last_success_opt_commit_log_line: 上次被 action 成功处理过的 commit 对应的格式化输出 格式如下:
-
-        commit 哈希                               @/@    commit 时间 带时区       @/@    commit mesage
-        3bd78e3477da4c19aaf345095438be12a5359cba @/@ 2020-05-02 21:03:10 +0800 @/@ 原来是没有执行权限
-
-    :return: 非空,最新的文件变化列表 ;
-             如果为空意味着, repository 没有发生变化
+    :param git_diff_line:
+    :return:
     """
 
-    args = ["git", "log", "--date=format:%Y-%m-%d %H:%M:%S %z",
-            "--pretty=format:%H{separator}%cd{separator}%s{separator}".format(separator=git_log_line_separator)]
+    temp_git_diff_line: str
 
-    # 参数类型错误
-    if last_success_opt_commit_log_line is None:
-        args.append("-2")
+    if git_diff_line is None:
+        return
+    elif len(git_diff_line) < 31:
+        return
     else:
-        if isinstance(last_success_opt_commit_log_line, str):
-            commit_hash: str = get_commit_hash_form_commit_log_line(last_success_opt_commit_log_line)
+        temp_git_diff_line = git_diff_line[31:]
+
+    first_char = temp_git_diff_line[0]
+
+    if first_char == ModifyEnum.modify_addition or \
+            first_char == ModifyEnum.modify_deletion or \
+            first_char == ModifyEnum.modify_modification or \
+            first_char == ModifyEnum.modify_file_is_unmerged:
+        """一个文件路径"""
+        ont_path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if len(ont_path_ary) == 3 and len(ont_path_ary[2]) == 0:
+            print("增加  文件日志格式通过校验")
             pass
         else:
-            raise Exception("函数参数类型错误, 请校验")
+            pass
+        pass
+    elif first_char == ModifyEnum.modify_copy or \
+            first_char == ModifyEnum.modify_renaming:
+        """两个文件路径"""
+        two_path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if len(two_path_ary) == 4 and len(two_path_ary[3]) == 0:
+            print("拷贝  文件日志格式通过校验")
+            pass
+        else:
+            pass
+        pass
+    elif first_char == ModifyEnum.modify_change_type:
+        """未知操作"""
+        print("未知操作 \t " + git_diff_line)
+        pass
+    elif first_char == ModifyEnum.modify_unknown:
+        """未知错误操作"""
+        print("未知错误操作 \t " + git_diff_line)
+        pass
 
-    completedProcess = subprocess.run(args=args, text=True)
-    completedProcess = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-    stdout: str = completedProcess.stdout
-    stderr: str = completedProcess.stderr
 
 
-    return None
+commit_log_range: [] = get_current_opt_commit_log_line_range("2020-05-06 20:22:28 +0800")
 
+after_commit_hash: str = get_commit_hash_form_commit_log_line(commit_log_range[0])
 
-get_diff_from_commits(None)
+earlier_commit_hash: str = get_commit_hash_form_commit_log_line(commit_log_range[1])
+
+git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
 
 exit('手动终止,没有含义')
 
