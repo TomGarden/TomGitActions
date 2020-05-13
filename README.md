@@ -50,9 +50,29 @@ steps:
     - [PyGithub 开发文档](https://pygithub.readthedocs.io/en/latest/)
     - [对类中的 self 的理解](https://docs.python.org/zh-cn/3/tutorial/classes.html)
 - [关于 GitHub 的访问权限](https://developer.github.com/apps/about-apps/)
+- [关于 git 学习 pro git 这个手册是真的不错](https://git-scm.com/book/zh/v2)
 - [关于 git 操作](https://git-scm.com/docs):本项目着重用到的内容为
     - [git diff --raw](https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---raw)
         - [（git diff --raw）Raw output format](https://git-scm.com/docs/git-diff#_raw_output_format)
+      ```markdown
+        git diff 操作是有方向的含义的，方向是以时间作为量度，下面列表的顺序就是操作顺序，也就是时间顺序
+        - 在某个分支上不间断操作    ： 操作前的提交哈希为  hash-0
+        1. 创建一个文件 oneFile   ： 操作对应哈希为 hash-1
+        2. 修改文件 oneFile 内容  ： 操作对应哈希为 hash-2
+        
+        git diff --raw hash-2 hash-0
+        - 得到的操作状态为 D 也就是说删除了文件 oneFile
+      
+        git diff --raw hash-0 hash-2
+        - 得到的操作撞他爱为 A 也就是说创建了文件 oneFile
+      
+        默认的 git diff 获取的三个 哈希值自上而下的顺序是
+        hash-2
+        hash-1
+        hash-0
+      ```
+- `git diff commit commit` 可以获取变化的文件这没问题 , 但是 commit 的顺序是时间相关的,所以 我们还要获取 commit 操作的时间
+- `git log --pretty=format:"%h - %an, %ar : %s"` 可以帮我们了解关心的内容的格式化信息,这一点应该会很有帮助      
     
 
 ### 2.1. 限制须知
@@ -101,3 +121,7 @@ steps:
 10. 尽最大努力控制学习成本
 11. git diff 的一般操作已经可以 把控， 
 12. git merge 后的 diff 操作尚需详究，待到测试流程完善
+13. Blog 应该是有浓重个人色彩的存在, 我们应该有一个配置文件来输出随机的文字, 这个文件就是随机的信息池
+14. git 文档中的某些术语还需要辨析
+     - tree / index / ...
+15. 对于用户代码回滚后的应对方式获取是可以通过不处理来处理的(再次提交内容或需可行)-细节有待详究

@@ -1,61 +1,61 @@
-# 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-name: self_host
-
-
-# 下文含义为 *******************************************
-#     当 master 分支发生 push 事件时针对 paths 
-#     中指定的文件时执行 jobs(作业)
-# *****************************************************
-on: # 触发工作流程的 GitHub 事件的名称。
-  push:
-    branches:
-      - master
-#    paths:
-#      # 路径名错误会导致执行失败，并且没有提示的执行失败
-#      - 'posts/*.md'
-#      - 'posts/*/*.md'
-#      - 'posts/*/*/*.md'
-
-# 工作流程运行包括一项或多项作业。
-# 作业默认是并行运行。
-# 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
-jobs:
-
-  install_dependence_job:
-
-    runs-on: [self-hosted, macos]
-
-    steps: # 一个 job(作业) 可以分为若干 step(步骤)
-      # 检出(获取)这个仓库的一个release 版本
-    - uses: actions/checkout@v2
-      # 定义环境变量
-      with:
-        ref: master
-
-    - name: Install dependencies # 步骤显示在 GitHub 上的名称。
-      #run: bash ./.github/github_actions/install_dependence_macos.sh
-      run: |
-        echo "假装正在安装依赖"
-        ls -l
-
-
-  call_python_script: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
-                   # 在本文中对应的就是 git-issues-blog.py 作业配置
-
-    needs: install_dependence_job
-
-    runs-on: [self-hosted, macos]
-
-    steps: # 一个 job(作业) 可以分为若干 step(步骤)
-    # 检出(获取)这个仓库的一个release 版本
-
-    - uses: actions/checkout@v2
-      # 定义环境变量
-      with:
-        ref: master
-
-    - name: Publish Issues
-      run: python3 ./.github/github_actions/git_action_practice.py
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        POSTS_PATH: 'posts'
+## 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
+#name: self_host
+#
+#
+## 下文含义为 *******************************************
+##     当 master 分支发生 push 事件时针对 paths
+##     中指定的文件时执行 jobs(作业)
+## *****************************************************
+#on: # 触发工作流程的 GitHub 事件的名称。
+#  push:
+#    branches:
+#      - master
+##    paths:
+##      # 路径名错误会导致执行失败，并且没有提示的执行失败
+##      - 'posts/*.md'
+##      - 'posts/*/*.md'
+##      - 'posts/*/*/*.md'
+#
+## 工作流程运行包括一项或多项作业。
+## 作业默认是并行运行。
+## 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
+#jobs:
+#
+#  install_dependence_job:
+#
+#    runs-on: [self-hosted, macos]
+#
+#    steps: # 一个 job(作业) 可以分为若干 step(步骤)
+#      # 检出(获取)这个仓库的一个release 版本
+#    - uses: actions/checkout@v2
+#      # 定义环境变量
+#      with:
+#        ref: master
+#
+#    - name: Install dependencies # 步骤显示在 GitHub 上的名称。
+#      #run: bash ./.github/github_actions/install_dependence_macos.sh
+#      run: |
+#        echo "假装正在安装依赖"
+#        ls -l
+#
+#
+#  call_python_script: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
+#                   # 在本文中对应的就是 git-issues-blog.py 作业配置
+#
+#    needs: install_dependence_job
+#
+#    runs-on: [self-hosted, macos]
+#
+#    steps: # 一个 job(作业) 可以分为若干 step(步骤)
+#    # 检出(获取)这个仓库的一个release 版本
+#
+#    - uses: actions/checkout@v2
+#      # 定义环境变量
+#      with:
+#        ref: master
+#
+#    - name: Publish Issues
+#      run: python3 ./.github/github_actions/git_action_practice.py
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        POSTS_PATH: 'posts'
