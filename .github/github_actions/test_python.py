@@ -259,7 +259,7 @@ def issues_update(old_file: str, new_file: str):
     issues_number: int = ISSUES_DICTIONARY_MAP[old_file]
     old_issues = repo.get_issue(issues_number)
 
-    repo.iss
+    repo.update_file
     issue = repo.create_issue(title, issue_content)
     pass
 
@@ -274,17 +274,70 @@ def issues_unmerged(file_path: str):
 
 def issues_opt(new_file: str, old_file: str = None):
     """
-    给定两个文件路径更新 issues 内容
+    给定两个文件路径, 用于更新 issues 内容
+
     :param old_file: 不一定有值, 如果有意味着要更新文件
     :param new_file: 一定有值, 本次操作的核心文件
     :return:
     """
 
-    ISSUES_DICTIONARY_MAP
+    if new_file is None or len(new_file) == 0:
+        raise Exception("异常参数: {}".format(new_file))
 
-    repo.iss
-    issue = repo.create_issue(title, issue_content)
-    pass
+    issues_title = pathlib.Path(new_file).name
+    with open(new_file, encoding='utf-8', mode='r') as file_stream:
+        issues_body = file_stream.read()
+        file_stream.close()
+
+    if old_file is None or len(old_file) == 0:
+        if new_file in ISSUES_DICTIONARY_MAP:
+            issues_update(ISSUES_DICTIONARY_MAP[new_file], issues_title, issues_body)
+        else:
+            issues = repo.create_issue(issues_title, issues_body)
+        pass
+    else:
+        if old_file in ISSUES_DICTIONARY_MAP:
+            issues_update(ISSUES_DICTIONARY_MAP[old_file], issues_title, issues_body)
+        else:
+            issues = repo.create_issue(issues_title, issues_body)
+
+
+def issues_update(issues_number: int, issues_title: str = None, issues_body: str = None) -> bool:
+    """
+    更新指定 issues >>> `https://developer.github.com/v3/issues/#update-an-issue`
+
+    :param issues_number: 当前 issues 对应的 issues id
+    :param issues_title: issues 标题
+    :param issues_body: issues 内容
+    :return: true 更新内容成功 , false 更新出错
+    """
+
+    # 获取 issues 内容
+    issues = repo.get_issue(issues_number)
+    print(issues)
+
+    # 获取 issues url
+    issues_url = issues.url()
+
+    # 解析并更新 issues 内容
+    issues_raw_str = issues.raw_data()
+    issues_obj = json.load(issues_raw_str)
+    issues_obj['title'] = issues_title
+    issues_obj['body'] = issues_body
+
+    # 设置更新请求 header
+    patch_header = {'Authorization': 'token %s' % GITHUB_TOKEN}
+
+    # 发起更新 issues 请求
+    response = requests.patch(issues_url, headers=patch_header, data=json.dumps(issues_obj))
+
+    update_result = response.status_code == 200
+
+    if not update_result:
+        print(update_result)
+        logger("更新 issues 失败, issues_number = {}".format(issues_number))
+
+    return update_result
 
 
 def opt_dif_line(git_diff_line: str):
@@ -374,6 +427,8 @@ after_commit_hash: str = get_commit_hash_form_commit_log_line(commit_log_range[0
 earlier_commit_hash: str = get_commit_hash_form_commit_log_line(commit_log_range[1])
 
 git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
+
+issues_update(2)
 
 exit('手动终止,没有含义')
 
