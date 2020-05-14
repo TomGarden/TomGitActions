@@ -62,7 +62,7 @@ GITHUB_REPO = os.environ['GITHUB_REPOSITORY']
 GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
-ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map')
+ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
 
 # 命令行输出文件的间隔符
 git_log_line_separator = "···@/@···"
@@ -113,6 +113,10 @@ ISSUES_DICTIONARY_MAP = {}
 # github_obj = Github(login_or_token=GITHUB_TOKEN)
 github_obj = Github(login_or_token=GITHUB_TOKEN, base_url=GITHUB_API)
 repo = github_obj.get_repo(GITHUB_REPO)
+
+
+def logger(str: str):
+    print(str)
 
 
 def get_commit_hash_form_commit_log_line(last_success_opt_commit_log_line: str) -> str:
@@ -224,6 +228,65 @@ def get_diff_from_commits(after_commit_hash: str, earlier_commit_hash: str) -> [
     return git_diff_line_list
 
 
+def load_issues_directory_map() -> {}:
+    logger("暂未获取到已处理过的映射文件")
+    return None
+
+
+def issues_add(file_path: str):
+    pass
+
+
+def issues_update_content(file_path: str):
+    pass
+
+
+def issues_update(old_file: str, new_file: str):
+    """
+    给定两个文件路径更新 issues 内容
+    :param old_file: 不一定有值, 如果有意味着要更新文件
+    :param new_file: 一定有值, 本次操作的核心文件
+    :return:
+    """
+
+    if old_file is None or len(old_file) == 0 or \
+            new_file is None or len(new_file) == 0:
+        raise Exception("异常参数请校验 old_file={old_file},new_file={new_file}".format(old_file=old_file, new_file=new_file))
+
+    if old_file not in ISSUES_DICTIONARY_MAP:
+        raise Exception("要更新的旧路径`{old_file}`, 尚未收录到映射文件".format(old_file=old_file))
+
+    issues_number: int = ISSUES_DICTIONARY_MAP[old_file]
+    old_issues = repo.get_issue(issues_number)
+
+    repo.iss
+    issue = repo.create_issue(title, issue_content)
+    pass
+
+
+def issues_rename(file_path: str):
+    pass
+
+
+def issues_unmerged(file_path: str):
+    pass
+
+
+def issues_opt(new_file: str, old_file: str = None):
+    """
+    给定两个文件路径更新 issues 内容
+    :param old_file: 不一定有值, 如果有意味着要更新文件
+    :param new_file: 一定有值, 本次操作的核心文件
+    :return:
+    """
+
+    ISSUES_DICTIONARY_MAP
+
+    repo.iss
+    issue = repo.create_issue(title, issue_content)
+    pass
+
+
 def opt_dif_line(git_diff_line: str):
     """
     操作 git diff 的返回行
@@ -241,39 +304,67 @@ def opt_dif_line(git_diff_line: str):
     else:
         temp_git_diff_line = git_diff_line[31:]
 
+    def verify_one_path_log_ary(one_path_ary: []) -> bool:
+        return len(one_path_ary) == 3 and len(one_path_ary[2]) == 0
+
+    def verify_two_path_log_ary(two_path_ary: []) -> bool:
+        return len(two_path_ary) == 4 and len(two_path_ary[3]) == 0
+
     first_char = temp_git_diff_line[0]
 
-    if first_char == ModifyEnum.modify_addition or \
-            first_char == ModifyEnum.modify_deletion or \
-            first_char == ModifyEnum.modify_modification or \
-            first_char == ModifyEnum.modify_file_is_unmerged:
-        """一个文件路径"""
-        ont_path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
-        if len(ont_path_ary) == 3 and len(ont_path_ary[2]) == 0:
-            print("增加  文件日志格式通过校验")
-            pass
+    if first_char == ModifyEnum.modify_addition:
+        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if verify_one_path_log_ary(path_ary):
+            issues_add(path_ary[1])
         else:
+            logger("增加文件失败 : " + git_diff_line)
             pass
         pass
-    elif first_char == ModifyEnum.modify_copy or \
-            first_char == ModifyEnum.modify_renaming:
-        """两个文件路径"""
-        two_path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
-        if len(two_path_ary) == 4 and len(two_path_ary[3]) == 0:
-            print("拷贝  文件日志格式通过校验")
+    elif first_char == ModifyEnum.modify_deletion:
+        logger("删除操作暂不处理 : " + git_diff_line)
+        pass
+    elif first_char == ModifyEnum.modify_modification:
+        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if verify_one_path_log_ary(path_ary):
+            issues_update_content(path_ary[1])
             pass
         else:
+            logger("更新文件内容失败 : " + git_diff_line)
+            pass
+        pass
+    elif first_char == ModifyEnum.modify_file_is_unmerged:
+        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if verify_one_path_log_ary(path_ary):
+            issues_unmerged(path_ary[1])
+            pass
+        else:
+            logger("操作 unmerged 文件失败 : " + git_diff_line)
+            pass
+        pass
+    elif first_char == ModifyEnum.modify_copy:
+        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if verify_two_path_log_ary(path_ary):
+            issues_add(path_ary[2])
+            pass
+        else:
+            logger("操作拷贝文件失败 : " + git_diff_line)
+            pass
+        pass
+    elif first_char == ModifyEnum.modify_renaming:
+        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
+        if verify_two_path_log_ary(path_ary):
+            issues_rename(path_ary[2])
+            pass
+        else:
+            logger("重命名文件文件失败 : " + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_change_type:
-        """未知操作"""
-        print("未知操作 \t " + git_diff_line)
+        logger("未知操作 \t " + git_diff_line)
         pass
     elif first_char == ModifyEnum.modify_unknown:
-        """未知错误操作"""
-        print("未知错误操作 \t " + git_diff_line)
+        logger("未知错误操作 \t " + git_diff_line)
         pass
-
 
 
 commit_log_range: [] = get_current_opt_commit_log_line_range("2020-05-06 20:22:28 +0800")
