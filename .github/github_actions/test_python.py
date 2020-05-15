@@ -71,6 +71,14 @@ git_diff_line_prefix = "///"
 git_diff_line_separator = "\x00"
 git_diff_line_separator_newline = git_diff_line_separator + "\n"
 
+# 持久化的 json 文件中的 key 字符串
+LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY = "last_success_opt_commit_log_line_key"
+ISSUES_DICTIONARY_MAP_KEY = "issues_dictionary_map_key"
+
+# issues 和 repository 文件的映射
+ISSUES_DICTIONARY_MAP: {}
+LAST_SUCCESS_OPT_COMMIT_LOG_LINE: str
+
 
 class ModifyEnum(enum.Enum):
     """
@@ -100,51 +108,41 @@ class ModifyEnum(enum.Enum):
     modify_unknown = 'X'
 
 
-# 最后一次执行 acton 操作的时间戳
-LAST_ACTION_TIME_STAMP = "__last_opt_time_stamp__"
-
-# Global variables
-POSTS = []
-CHANGED = []
-# issues 和 repository 文件的映射
-ISSUES_DICTIONARY_MAP = {}
-
 # github object
 # github_obj = Github(login_or_token=GITHUB_TOKEN)
 github_obj = Github(login_or_token=GITHUB_TOKEN, base_url=GITHUB_API)
 repo = github_obj.get_repo(GITHUB_REPO)
 
 
-def logger(str: str):
-    print(str)
+def logger(string: str):
+    print(string)
 
 
-def get_commit_hash_form_commit_log_line(last_success_opt_commit_log_line: str) -> str:
+def get_hash_form_commit_log_line(last_success_opt_commit_log_line: str) -> str or None:
     """
     :param last_success_opt_commit_log_line: git log 格式化输出的一行中获取 commit hash
     :return: 参数中包含的 commit hash , 为 None 表示没有有效的 commit , 表示尚未提交过任何内容
     """
 
-    if last_success_opt_commit_log_line is None:
+    if last_success_opt_commit_log_line is None or \
+            not isinstance(last_success_opt_commit_log_line, str) or \
+            len(last_success_opt_commit_log_line) == 0:
         return None
-    else:
-        if not isinstance(last_success_opt_commit_log_line, str):
-            return None
 
     return last_success_opt_commit_log_line.split(git_log_line_separator, 1)[0]
 
 
-def get_commit_time_form_commit_log_line(last_success_opt_commit_log_line: str) -> str:
+def get_time_form_commit_log_line(last_success_opt_commit_log_line: str) -> str or None:
     """
     :param last_success_opt_commit_log_line: git log 格式化输出的一行中获取 commit 的提交时间
     :return: 参数中包含的 commit 的提交时间
     """
 
-    if last_success_opt_commit_log_line is None:
+    # 校验入参合法性
+    if last_success_opt_commit_log_line is None or \
+            not isinstance(last_success_opt_commit_log_line, str) or \
+            len(last_success_opt_commit_log_line) == 0:
         return None
-    else:
-        if not isinstance(last_success_opt_commit_log_line, str):
-            return None
 
     str_array: [] = last_success_opt_commit_log_line.split(git_log_line_separator, 2)
     if len(str_array) < 2:
@@ -158,9 +156,7 @@ def get_current_opt_commit_log_line_range(last_commit_time: str) -> []:
     获取我们即将处理的 commit 区间, 一首一位两行格式化 commit 日志行
     核心命令: git log --pretty=format:"%H - %cd : %s" --date=format:'%Y-%m-%d %H:%M:%S %z'
 
-    :param last_commit_hash: 上次处理的次提交的 commit hash 值
-                             None 表示尚未处理过任何 commit
-    :param last_commit_time: 上次处理的次提交的 commit 的时间
+    :param last_commit_time: 上次处理的次 commit 的时间
                              None 表示尚未处理过任何 commit
     :return: 返回我们关心的 commit 区间,
                 result[0] 表示时间上最晚的提交
@@ -175,10 +171,15 @@ def get_current_opt_commit_log_line_range(last_commit_time: str) -> []:
     else:
         args.append("--since='{commit_time}'".format(commit_time=last_commit_time))
 
-    completedProcess = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    completed_process = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    stdout: str = completedProcess.stdout
-    stderr: str = completedProcess.stderr
+    stdout: str = completed_process.stdout
+    stderr: str = completed_process.stderr
+
+    if stderr is not None and \
+            len(stderr) > 0:
+        logger("{method_name}({param}) --> err msg : \n\t{errmsg}".
+               format(method_name='get_current_opt_commit_log_line_range', param=last_commit_time, errmsg=stderr))
 
     if stdout is None:
         return None
@@ -209,8 +210,10 @@ def get_diff_from_commits(after_commit_hash: str, earlier_commit_hash: str) -> [
     if earlier_commit_hash is not None:
         args.append(earlier_commit_hash)
 
-    if after_commit_hash is None:
-        raise Exception("last_commit_hash 为 None ,这是异常值不接受")
+    if after_commit_hash is None or \
+            not isinstance(after_commit_hash, str) or \
+            len(after_commit_hash) == 0:
+        raise Exception("last_commit_hash 值 异常 ,这是异常值")
     else:
         args.append(after_commit_hash)
 
@@ -220,86 +223,18 @@ def get_diff_from_commits(after_commit_hash: str, earlier_commit_hash: str) -> [
     stdout: str = completed_process.stdout
     stderr: str = completed_process.stderr
 
-    git_diff_line_list: [] = stdout.split(git_diff_line_prefix)
+    if stderr is not None and \
+            len(stderr) > 0:
+        logger("{method_name}({after_param},{earlier_param}) --> err msg : \n\t{errmsg}".
+               format(method_name='get_diff_from_commits', after_param=after_commit_hash,
+                      earlier_param=earlier_commit_hash, errmsg=stderr))
 
-    if len(git_diff_line_list) > 0 and len(git_diff_line_list[0]) == 0:
-        git_diff_line_list = git_diff_line_list[1:]
+    _git_diff_line_list: [] = stdout.split(git_diff_line_prefix)
 
-    return git_diff_line_list
+    if len(_git_diff_line_list) > 0 and len(_git_diff_line_list[0]) == 0:
+        _git_diff_line_list = _git_diff_line_list[1:]
 
-
-def load_issues_directory_map() -> {}:
-    logger("暂未获取到已处理过的映射文件")
-    return None
-
-
-def issues_add(file_path: str):
-    pass
-
-
-def issues_update_content(file_path: str):
-    pass
-
-
-def issues_update(old_file: str, new_file: str):
-    """
-    给定两个文件路径更新 issues 内容
-    :param old_file: 不一定有值, 如果有意味着要更新文件
-    :param new_file: 一定有值, 本次操作的核心文件
-    :return:
-    """
-
-    if old_file is None or len(old_file) == 0 or \
-            new_file is None or len(new_file) == 0:
-        raise Exception("异常参数请校验 old_file={old_file},new_file={new_file}".format(old_file=old_file, new_file=new_file))
-
-    if old_file not in ISSUES_DICTIONARY_MAP:
-        raise Exception("要更新的旧路径`{old_file}`, 尚未收录到映射文件".format(old_file=old_file))
-
-    issues_number: int = ISSUES_DICTIONARY_MAP[old_file]
-    old_issues = repo.get_issue(issues_number)
-
-    repo.update_file
-    issue = repo.create_issue(title, issue_content)
-    pass
-
-
-def issues_rename(file_path: str):
-    pass
-
-
-def issues_unmerged(file_path: str):
-    pass
-
-
-def issues_opt(new_file: str, old_file: str = None):
-    """
-    给定两个文件路径, 用于更新 issues 内容
-
-    :param old_file: 不一定有值, 如果有意味着要更新文件
-    :param new_file: 一定有值, 本次操作的核心文件
-    :return:
-    """
-
-    if new_file is None or len(new_file) == 0:
-        raise Exception("异常参数: {}".format(new_file))
-
-    issues_title = pathlib.Path(new_file).name
-    with open(new_file, encoding='utf-8', mode='r') as file_stream:
-        issues_body = file_stream.read()
-        file_stream.close()
-
-    if old_file is None or len(old_file) == 0:
-        if new_file in ISSUES_DICTIONARY_MAP:
-            issues_update(ISSUES_DICTIONARY_MAP[new_file], issues_title, issues_body)
-        else:
-            issues = repo.create_issue(issues_title, issues_body)
-        pass
-    else:
-        if old_file in ISSUES_DICTIONARY_MAP:
-            issues_update(ISSUES_DICTIONARY_MAP[old_file], issues_title, issues_body)
-        else:
-            issues = repo.create_issue(issues_title, issues_body)
+    return _git_diff_line_list
 
 
 def issues_update(issues_number: int, issues_title: str = None, issues_body: str = None) -> bool:
@@ -340,6 +275,39 @@ def issues_update(issues_number: int, issues_title: str = None, issues_body: str
     return update_result
 
 
+def issues_opt(new_file: str, old_file: str = None):
+    """
+    给定两个文件路径, 用于更新 issues 内容
+
+    :param old_file: 不一定有值, 如果有意味着要更新文件
+    :param new_file: 一定有值, 本次操作的核心文件
+    :return:
+    """
+
+    if new_file is None or len(new_file) == 0:
+        raise Exception("异常参数: {}".format(new_file))
+
+    issues_title = pathlib.Path(new_file).name
+    with open(new_file, encoding='utf-8', mode='r') as file_stream:
+        issues_body = file_stream.read()
+        file_stream.close()
+
+    if old_file is None or \
+            len(old_file) == 0:
+        if new_file in ISSUES_DICTIONARY_MAP:
+            update_result = issues_update(ISSUES_DICTIONARY_MAP[new_file], issues_title, issues_body)
+        else:
+            issues = repo.create_issue(issues_title, issues_body)
+            ISSUES_DICTIONARY_MAP[new_file] = issues.number()
+        pass
+    else:
+        if old_file in ISSUES_DICTIONARY_MAP:
+            update_result = issues_update(ISSUES_DICTIONARY_MAP[old_file], issues_title, issues_body)
+        else:
+            issues = repo.create_issue(issues_title, issues_body)
+            ISSUES_DICTIONARY_MAP[new_file] = issues.number()
+
+
 def opt_dif_line(git_diff_line: str):
     """
     操作 git diff 的返回行
@@ -348,14 +316,14 @@ def opt_dif_line(git_diff_line: str):
     :return:
     """
 
-    temp_git_diff_line: str
-
-    if git_diff_line is None:
-        return
-    elif len(git_diff_line) < 31:
+    if git_diff_line is None or \
+            not isinstance(git_diff_line, str) or \
+            len(git_diff_line) < 31:
+        logger("{method_name}({param}) --> err msg : \n\t{errmsg}".
+               format(method_name='opt_dif_line', param=git_diff_line, errmsg="无法识别的参数格式"))
         return
     else:
-        temp_git_diff_line = git_diff_line[31:]
+        temp_git_diff_line: str = git_diff_line[31:]
 
     def verify_one_path_log_ary(one_path_ary: []) -> bool:
         return len(one_path_ary) == 3 and len(one_path_ary[2]) == 0
@@ -364,22 +332,28 @@ def opt_dif_line(git_diff_line: str):
         return len(two_path_ary) == 4 and len(two_path_ary[3]) == 0
 
     first_char = temp_git_diff_line[0]
+    path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
 
     if first_char == ModifyEnum.modify_addition:
-        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
-            issues_add(path_ary[1])
+            issues_opt(path_ary[1])
         else:
             logger("增加文件失败 : " + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_deletion:
-        logger("删除操作暂不处理 : " + git_diff_line)
+        if verify_one_path_log_ary(path_ary):
+            if ISSUES_DICTIONARY_MAP.pop[path_ary[1], True]:
+                logger("删除文件失败-2 : " + git_diff_line)
+        else:
+            logger("删除文件失败-1 : " + git_diff_line)
+            pass
+
         pass
     elif first_char == ModifyEnum.modify_modification:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
-            issues_update_content(path_ary[1])
+            issues_opt(path_ary[1])
             pass
         else:
             logger("更新文件内容失败 : " + git_diff_line)
@@ -388,7 +362,7 @@ def opt_dif_line(git_diff_line: str):
     elif first_char == ModifyEnum.modify_file_is_unmerged:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
-            issues_unmerged(path_ary[1])
+            issues_opt(path_ary[1])
             pass
         else:
             logger("操作 unmerged 文件失败 : " + git_diff_line)
@@ -397,7 +371,7 @@ def opt_dif_line(git_diff_line: str):
     elif first_char == ModifyEnum.modify_copy:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
-            issues_add(path_ary[2])
+            issues_opt(path_ary[2])
             pass
         else:
             logger("操作拷贝文件失败 : " + git_diff_line)
@@ -406,7 +380,7 @@ def opt_dif_line(git_diff_line: str):
     elif first_char == ModifyEnum.modify_renaming:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
-            issues_rename(path_ary[2])
+            issues_opt(path_ary[2])
             pass
         else:
             logger("重命名文件文件失败 : " + git_diff_line)
@@ -420,15 +394,37 @@ def opt_dif_line(git_diff_line: str):
         pass
 
 
-commit_log_range: [] = get_current_opt_commit_log_line_range("2020-05-06 20:22:28 +0800")
+# 加载持久化的 json 文件获取上一次操作的信息
+issues_dictionary_map_file_obj = pathlib.Path(ISSUES_DICTIONARY_MAP_FILE)
+if issues_dictionary_map_file_obj.exists():
+    with open(ISSUES_DICTIONARY_MAP_FILE, encoding='utf-8', mode='r') as file:
+        JSON_OBJ = json.load(file)
+        LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
+        ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
 
-after_commit_hash: str = get_commit_hash_form_commit_log_line(commit_log_range[0])
+# 获取上次操作到的那个 commit 的提交时间
+last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
 
-earlier_commit_hash: str = get_commit_hash_form_commit_log_line(commit_log_range[1])
+# 获取我们关心的 commit 范围(从给定时间开始, 到最后一次)
+commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
 
+# 我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)
+after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
+
+# 我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)
+earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
+
+# 从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表
 git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
 
-issues_update(2)
+# 遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)
+for a_git_diff_line in git_diff_line_list:
+    opt_dif_line(a_git_diff_line)
+
+# 操作完成重新持久化 json 文件
+JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY] = commit_log_range[0]
+JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY] = ISSUES_DICTIONARY_MAP
+json_str = json.dump(JSON_OBJ)
 
 exit('手动终止,没有含义')
 
@@ -436,6 +432,13 @@ exit('手动终止,没有含义')
 #############                         重构逻辑分割线                     #################
 #######################################################################################
 
+
+# 最后一次执行 acton 操作的时间戳
+LAST_ACTION_TIME_STAMP = "__last_opt_time_stamp__"
+
+# Global variables
+POSTS = []
+CHANGED = []
 
 # region local dictionary 获取可上传的文件路径集合
 issues_dictionary_map_file = pathlib.Path(ISSUES_DICTIONARY_MAP_FILE)

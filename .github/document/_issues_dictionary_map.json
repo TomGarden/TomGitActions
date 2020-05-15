@@ -1,6 +1,6 @@
 {
-  "last_success_opt_commit_log_line": "bcda3e39e9a8ee6807a1bf95122814f6a4d5b8bd···@/@···2020-05-01 21:29:02 +0800···@/@···测试直接运行 python 和作为 self-host 运行python 执行结果是否有差异",
-  "issues_dictionary_map": {
+  "last_success_opt_commit_log_line_key": "bcda3e39e9a8ee6807a1bf95122814f6a4d5b8bd···@/@···2020-05-01 21:29:02 +0800···@/@···测试直接运行 python 和作为 self-host 运行python 执行结果是否有差异",
+  "issues_dictionary_map_key": {
     "/path/path": 123123,
     "/path/path2": 234234
   }
