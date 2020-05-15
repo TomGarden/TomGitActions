@@ -63,6 +63,7 @@ GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
 ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
+ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 2)
 
 # 命令行输出文件的间隔符
 git_log_line_separator = "···@/@···"
@@ -76,8 +77,9 @@ LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY = "last_success_opt_commit_log_line_key"
 ISSUES_DICTIONARY_MAP_KEY = "issues_dictionary_map_key"
 
 # issues 和 repository 文件的映射
-ISSUES_DICTIONARY_MAP: {}
-LAST_SUCCESS_OPT_COMMIT_LOG_LINE: str
+JSON_OBJ = {}
+ISSUES_DICTIONARY_MAP = {}
+LAST_SUCCESS_OPT_COMMIT_LOG_LINE = ""
 
 
 class ModifyEnum(enum.Enum):
@@ -112,6 +114,47 @@ class ModifyEnum(enum.Enum):
 # github_obj = Github(login_or_token=GITHUB_TOKEN)
 github_obj = Github(login_or_token=GITHUB_TOKEN, base_url=GITHUB_API)
 repo = github_obj.get_repo(GITHUB_REPO)
+
+
+def get_issues_file_dictionary_form_issue(issue_number: int = ISSUES_NUMBER):
+    issue = repo.get_issue(issue_number)
+
+    json_str = issue.body
+    if json_str is None or \
+            not isinstance(json_str, str) or \
+            len(json_str) < 10:
+        logger("首次提交内容, 玩的开心 ~ ~")
+        return
+
+    global JSON_OBJ
+    global LAST_SUCCESS_OPT_COMMIT_LOG_LINE
+    global ISSUES_DICTIONARY_MAP
+
+    json_str = json_str[7:len(json_str) - 3]
+
+    JSON_OBJ = json.loads(json_str)
+    LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
+    ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
+
+
+def get_issues_file_dictionary_form_file(file_name: str):
+    issues_dictionary_map_file_obj = pathlib.Path(file_name)
+    if issues_dictionary_map_file_obj.exists():
+        with open(file_name, encoding='utf-8', mode='r') as file:
+            global JSON_OBJ
+            global LAST_SUCCESS_OPT_COMMIT_LOG_LINE
+            global ISSUES_DICTIONARY_MAP
+            JSON_OBJ = json.load(file)
+            LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
+            ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
+
+
+def persistence_file_dictionary_map_to_issue(issue_number: int = ISSUES_NUMBER):
+    JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY] = commit_log_range[0]
+    JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY] = ISSUES_DICTIONARY_MAP
+    json_str = json.dump(JSON_OBJ)
+
+    issues_update(issue_number, "映射文件", json_str)
 
 
 def logger(string: str):
@@ -255,7 +298,7 @@ def issues_update(issues_number: int, issues_title: str = None, issues_body: str
     issues_url = issues.url()
 
     # 解析并更新 issues 内容
-    issues_raw_str = issues.raw_data()
+    issues_raw_str = issues.body
     issues_obj = json.load(issues_raw_str)
     issues_obj['title'] = issues_title
     issues_obj['body'] = issues_body
@@ -273,6 +316,10 @@ def issues_update(issues_number: int, issues_title: str = None, issues_body: str
         logger("更新 issues 失败, issues_number = {}".format(issues_number))
 
     return update_result
+
+
+def issues_get(issues_number):
+    requests.get()
 
 
 def issues_opt(new_file: str, old_file: str = None):
@@ -395,12 +442,7 @@ def opt_dif_line(git_diff_line: str):
 
 
 # 加载持久化的 json 文件获取上一次操作的信息
-issues_dictionary_map_file_obj = pathlib.Path(ISSUES_DICTIONARY_MAP_FILE)
-if issues_dictionary_map_file_obj.exists():
-    with open(ISSUES_DICTIONARY_MAP_FILE, encoding='utf-8', mode='r') as file:
-        JSON_OBJ = json.load(file)
-        LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
-        ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
+get_issues_file_dictionary_form_issue()
 
 # 获取上次操作到的那个 commit 的提交时间
 last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
@@ -412,7 +454,10 @@ commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
 after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
 
 # 我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)
-earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
+if len(commit_log_range) > 1:
+    earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
+else:
+    earlier_commit_hash = None
 
 # 从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表
 git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
@@ -422,9 +467,7 @@ for a_git_diff_line in git_diff_line_list:
     opt_dif_line(a_git_diff_line)
 
 # 操作完成重新持久化 json 文件
-JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY] = commit_log_range[0]
-JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY] = ISSUES_DICTIONARY_MAP
-json_str = json.dump(JSON_OBJ)
+persistence_file_dictionary_map_to_issue()
 
 exit('手动终止,没有含义')
 
