@@ -50,7 +50,8 @@ from ignore_dir.debug_utils import debug_init_os_env
 ## 配置项
 #
 
-
+# 设置脚本的当前工作目录
+os.chdir("/Volumes/document/script_language/TomGitActions")
 debug_init_os_env()
 
 GITHUB_API = "https://api.github.com"
@@ -119,7 +120,7 @@ repo = github_obj.get_repo(GITHUB_REPO)
 def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
     _issue = repo.get_issue(_issue_number)
 
-    json_str = _issue.body
+    json_str = _issue.body.decode('unicode-escape')
     if json_str is None or \
             not isinstance(json_str, str) or \
             len(json_str) < 10:
@@ -155,7 +156,7 @@ def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER)
     JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY] = ISSUES_DICTIONARY_MAP
     json_str = json.dumps(JSON_OBJ)
 
-    issue_update(_issue_number, "映射文件", json_str)
+    issue_update(_issue_number, "映射文件", "```json{json_str}```".format(json_str=json_str))
 
 
 def logger(string: str):
@@ -299,9 +300,13 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
     _issue_url = _issue.url
 
     # 解析并更新 issue 内容
-    issue_obj = _issue.raw_data
-    issue_obj['title'] = _issue_title
-    issue_obj['body'] = _issue_body
+    # issue_obj = _issue.raw_data
+    # issue_obj['title'] = _issue_title
+    # issue_obj['body'] = _issue_body
+    issue_obj = {
+        'title': _issue_title,
+        'body': _issue_body
+    }
 
     # 设置更新请求 header
     patch_header = {'Authorization': 'token %s' % GITHUB_TOKEN}
@@ -337,8 +342,14 @@ def issue_opt(new_file: str, old_file: str = None):
     if new_file is None or len(new_file) == 0:
         raise Exception("异常参数: {}".format(new_file))
 
-    _issue_title = pathlib.Path(new_file).name
-    with open(new_file, encoding='utf-8', mode='r') as file_stream:
+    file_desc = pathlib.Path(new_file)
+
+    if not file_desc.exists():
+        logger("issue_opt({new_file}) : 文件不存在".format(new_file=new_file))
+        return
+
+    _issue_title = file_desc.name
+    with open(file_desc, encoding='utf-8', mode='r') as file_stream:
         _issue_body = file_stream.read()
         file_stream.close()
 
@@ -348,14 +359,14 @@ def issue_opt(new_file: str, old_file: str = None):
             update_result = issue_update(ISSUES_DICTIONARY_MAP[new_file], _issue_title, _issue_body)
         else:
             _issue = repo.create_issue(_issue_title, _issue_body)
-            ISSUES_DICTIONARY_MAP[new_file] = issue.number()
+            ISSUES_DICTIONARY_MAP[new_file] = _issue.number
         pass
     else:
         if old_file in ISSUES_DICTIONARY_MAP:
             update_result = issue_update(ISSUES_DICTIONARY_MAP[old_file], _issue_title, _issue_body)
         else:
             _issue = repo.create_issue(_issue_title, _issue_body)
-            ISSUES_DICTIONARY_MAP[new_file] = issue.number()
+            ISSUES_DICTIONARY_MAP[new_file] = _issue.number
 
 
 def opt_dif_line(git_diff_line: str):
@@ -384,14 +395,14 @@ def opt_dif_line(git_diff_line: str):
     first_char = temp_git_diff_line[0]
     path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
 
-    if first_char == ModifyEnum.modify_addition:
+    if first_char == ModifyEnum.modify_addition.value:
         if verify_one_path_log_ary(path_ary):
             issue_opt(path_ary[1])
         else:
             logger("增加文件失败 : " + git_diff_line)
             pass
         pass
-    elif first_char == ModifyEnum.modify_deletion:
+    elif first_char == ModifyEnum.modify_deletion.value:
         if verify_one_path_log_ary(path_ary):
             if ISSUES_DICTIONARY_MAP.pop[path_ary[1], True]:
                 logger("删除文件失败-2 : " + git_diff_line)
@@ -400,7 +411,7 @@ def opt_dif_line(git_diff_line: str):
             pass
 
         pass
-    elif first_char == ModifyEnum.modify_modification:
+    elif first_char == ModifyEnum.modify_modification.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
             issue_opt(path_ary[1])
@@ -409,7 +420,7 @@ def opt_dif_line(git_diff_line: str):
             logger("更新文件内容失败 : " + git_diff_line)
             pass
         pass
-    elif first_char == ModifyEnum.modify_file_is_unmerged:
+    elif first_char == ModifyEnum.modify_file_is_unmerged.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
             issue_opt(path_ary[1])
@@ -418,7 +429,7 @@ def opt_dif_line(git_diff_line: str):
             logger("操作 unmerged 文件失败 : " + git_diff_line)
             pass
         pass
-    elif first_char == ModifyEnum.modify_copy:
+    elif first_char == ModifyEnum.modify_copy.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
             issue_opt(path_ary[2])
@@ -427,7 +438,7 @@ def opt_dif_line(git_diff_line: str):
             logger("操作拷贝文件失败 : " + git_diff_line)
             pass
         pass
-    elif first_char == ModifyEnum.modify_renaming:
+    elif first_char == ModifyEnum.modify_renaming.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
             issue_opt(path_ary[2])
@@ -436,10 +447,10 @@ def opt_dif_line(git_diff_line: str):
             logger("重命名文件文件失败 : " + git_diff_line)
             pass
         pass
-    elif first_char == ModifyEnum.modify_change_type:
+    elif first_char == ModifyEnum.modify_change_type.value:
         logger("未知操作 \t " + git_diff_line)
         pass
-    elif first_char == ModifyEnum.modify_unknown:
+    elif first_char == ModifyEnum.modify_unknown.value:
         logger("未知错误操作 \t " + git_diff_line)
         pass
 
