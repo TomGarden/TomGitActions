@@ -13,6 +13,7 @@
 # reponse = requests.get("https://api.github.com/repos/TomGarden/TomGitActions/issues/1", headers=header)
 # print(reponse)
 # print(reponse.content)
+import json
 import os
 import subprocess
 
@@ -22,5 +23,15 @@ import subprocess
 # stdout: str = completed_process.stdout
 # stderr: str = completed_process.stderr
 
+
+issue_obj = {
+    'title': "我是标题",
+    'body': "我是内容, English"
+}
+issue_obj_str: str = json.dumps(issue_obj)
+if isinstance(issue_obj_str, str):
+    print("dumps之后是 str")
+else:
+    print("dumps之后非 str")
 print(os.getcwd())
-# print(stderr)
+print(issue_obj_str.encode('utf-8').decode('unicode_escape'))

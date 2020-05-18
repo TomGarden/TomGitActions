@@ -314,7 +314,9 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
     # 先设置代理在发起请
 
     # 发起更新 issue 请求
-    response = requests.patch(_issue_url, headers=patch_header, data=json.dumps(issue_obj))
+    request_data = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape')
+    response = requests.patch(_issue_url, headers=patch_header, data=request_data)
+
 
     update_result = response.status_code == 200
 
