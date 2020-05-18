@@ -209,11 +209,9 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     """
 
     args = ["git", "log", "--date=format:%Y-%m-%d %H:%M:%S %z",
-            "--pretty=format:%H{separator}%cd{separator}%s{separator}".format(separator=git_log_line_separator)]
+            "--pretty=format:'%H{separator}%cd{separator}%s{separator}'".format(separator=git_log_line_separator)]
 
-    if _last_commit_time is None:
-        args.append("-1")
-    else:
+    if _last_commit_time is not None:
         args.append("--since='{commit_time}'".format(commit_time=_last_commit_time))
 
     completed_process = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -233,8 +231,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     if len(line_array) <= 2:
         return line_array
     else:
-        result = [line_array[0], len(line_array) - 1]
-        return result
+        return [line_array[0], len(line_array) - 1]
 
 
 def get_diff_from_commits(_after_commit_hash: str, _earlier_commit_hash: str) -> []:
