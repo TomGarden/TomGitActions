@@ -1,3 +1,4 @@
+import logging
 # import json
 # import subprocess
 #
@@ -17,30 +18,43 @@ import json
 import os
 import subprocess
 
+
 # args = ['git', 'diff', '--raw', '-z', '--line-prefix=///', '1ab8aedf4f079aa01c5d1c256660a01a9b08316b']
 # completed_process = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 #
 # stdout: str = completed_process.stdout
 # stderr: str = completed_process.stderr
 
+def logger(*args, sep=' ', end='\n', file=None):
+    print(*args, sep, end)
 
-issue_obj = {
-    'title': "我是标题",
-    'body': "我是内容, English"
-}
-issue_obj_str: str = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape')
-if isinstance(issue_obj_str, str):
-    print("dumps之后是 str")
-else:
-    print("dumps之后非 str")
-print(os.getcwd())
-print(issue_obj_str)
 
-issue_obj_str = "```json{content}```".format(content=issue_obj_str)
-print(issue_obj_str)
+args = ["git", "diff", "--raw", "-z", "--line-prefix=line_prefix"]
+# print(args)
 
-if issue_obj_str.startswith('```json') and \
-        issue_obj_str.endswith('```'):
-    print("巴拉巴拉")
-else:
-    print("小魔仙")
+logger(args)
+print(args)
+
+
+
+logging.root.setLevel(logging.NOTSET)
+
+logging.debug("debug \t细节信息，仅当诊断问题时适用。")
+
+logging.info("info \t确认程序按预期运行")
+
+logging.warning("warning \t表明有已经或即将发生的意外（例如：磁盘空间不足）。程序仍按预期进行")
+
+logging.error("error \t由于严重的问题，程序的某些功能已经不能正常执行")
+
+logging.critical("critical \t严重的错误，表明程序已不能继续执行")
+
+def test():
+    try:
+        raise Exception("堆栈信息")
+    except Exception as e:
+        logging.exception(e)
+
+test()
+
+logging.info("bala")

@@ -1,4 +1,5 @@
 import enum
+import logging
 import os
 import re
 import json
@@ -49,6 +50,14 @@ from ignore_dir.debug_utils import debug_init_os_env
 #
 ## 配置项
 #
+
+
+logging.root.setLevel(logging.NOTSET)
+logging.debug("细节信息，仅当诊断问题时适用。")
+logging.info("确认程序按预期运行")
+logging.warning("表明有已经或即将发生的意外（例如：磁盘空间不足）。程序仍按预期进行")
+logging.error("由于严重的问题，程序的某些功能已经不能正常执行")
+logging.critical("严重的错误，表明程序已不能继续执行")
 
 # 设置脚本的当前工作目录
 os.chdir("/Volumes/document/script_language/TomGitActions")
@@ -129,8 +138,8 @@ def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
     if len(json_str) > 0 and \
             json_str.startswith('```json') and \
             json_str.endswith('```'):
-        print("get_issues_file_dictionary_form_issue(_issue_number)   SUCCESS(with json content)   ···"
-              .format(_issue_number))
+        logging.info("get_issues_file_dictionary_form_issue(_issue_number)   SUCCESS(with json content)   ···"
+                     .format(_issue_number))
 
         json_str = json_str[7:len(json_str) - 3]
 
@@ -140,8 +149,8 @@ def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
 
     elif not isinstance(json_str, str) or \
             len(json_str) == 0:
-        print("get_issues_file_dictionary_form_issue(_issue_number)   SUCCESS(content is empty)   ···"
-              .format(_issue_number))
+        logging.info("get_issues_file_dictionary_form_issue(_issue_number)   SUCCESS(content is empty)   ···"
+                     .format(_issue_number))
 
     else:
         raise Exception("get_issues_file_dictionary_form_issue(_issue_number)   FAILED(unknown err)")
@@ -166,10 +175,6 @@ def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER)
     json_str = json.dumps(JSON_OBJ)
 
     issue_update(_issue_number, "映射文件", "```json{json_str}```".format(json_str=json_str))
-
-
-def logger(string: str):
-    print(string)
 
 
 def get_hash_form_commit_log_line(last_success_opt_commit_log_line: str) -> str or None:
@@ -218,7 +223,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     """
 
     args = ["git", "log", "--date=format:%Y-%m-%d %H:%M:%S %z",
-            "--pretty=format:'%H{separator}%cd{separator}%s{separator}'".format(separator=git_log_line_separator)]
+            "--pretty=format:%H{separator}%cd{separator}%s{separator}".format(separator=git_log_line_separator)]
 
     if _last_commit_time is not None:
         args.append("--since='{commit_time}'".format(commit_time=_last_commit_time))
@@ -230,8 +235,9 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
 
     if stderr is not None and \
             len(stderr) > 0:
-        logger("{method_name}({param}) --> err msg : \n\t{errmsg}".
-               format(method_name='get_current_opt_commit_log_line_range', param=_last_commit_time, errmsg=stderr))
+        logging.warning("{method_name}({param}) --> err msg : \n\t{errmsg}".
+                        format(method_name='get_current_opt_commit_log_line_range', param=_last_commit_time,
+                               errmsg=stderr))
 
     if stdout is None:
         return None
@@ -240,7 +246,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     if len(line_array) <= 2:
         return line_array
     else:
-        return [line_array[0], len(line_array) - 1]
+        return [line_array[0], line_array[len(line_array) - 1]]
 
 
 def get_diff_from_commits(_after_commit_hash: str, _earlier_commit_hash: str) -> []:
@@ -268,17 +274,21 @@ def get_diff_from_commits(_after_commit_hash: str, _earlier_commit_hash: str) ->
     else:
         args.append(_after_commit_hash)
 
+    logging.info(args)
+
     completed_process: subprocess.CompletedProcess = \
         subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     stdout: str = completed_process.stdout
     stderr: str = completed_process.stderr
 
+    logging.info(stdout)
+
     if stderr is not None and \
             len(stderr) > 0:
-        logger("{method_name}({after_param},{earlier_param}) --> err msg : \n\t{errmsg}".
-               format(method_name='get_diff_from_commits', after_param=_after_commit_hash,
-                      earlier_param=_earlier_commit_hash, errmsg=stderr))
+        logging.warning("{method_name}({after_param},{earlier_param}) --> err msg : \n\t{errmsg}".
+                        format(method_name='get_diff_from_commits', after_param=_after_commit_hash,
+                               earlier_param=_earlier_commit_hash, errmsg=stderr))
 
     _git_diff_line_list: [] = stdout.split(git_diff_line_prefix)
 
@@ -300,7 +310,6 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
 
     # 获取 issue 内容
     _issue = repo.get_issue(_issue_number)
-    print(_issue)
 
     # 获取 issue url
     _issue_url = _issue.url
@@ -326,9 +335,9 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
     update_result = response.status_code == 200
 
     if not update_result:
-        print(response)
-        print(response.content)
-        logger("更新 issue 失败, _issue_number = {}".format(_issue_number))
+        logging.error(response)
+        logging.error(response.content)
+        logging.error("更新 issue 失败, _issue_number = {}".format(_issue_number))
 
     return update_result
 
@@ -352,10 +361,11 @@ def issue_opt(new_file: str, old_file: str = None):
     file_desc = pathlib.Path(new_file)
 
     if not file_desc.exists():
-        logger("issue_opt({new_file}) : 文件不存在".format(new_file=new_file))
+        logging.error("issue_opt({new_file}) : 文件不存在".format(new_file=new_file))
         return
 
     _issue_title = file_desc.name
+
     with open(file_desc, encoding='utf-8', mode='r') as file_stream:
         _issue_body = file_stream.read()
         file_stream.close()
@@ -384,11 +394,13 @@ def opt_dif_line(git_diff_line: str):
     :return:
     """
 
+    logging.info("即将操作:" + git_diff_line)
+
     if git_diff_line is None or \
             not isinstance(git_diff_line, str) or \
             len(git_diff_line) < 31:
-        logger("{method_name}({param}) --> err msg : \n\t{errmsg}".
-               format(method_name='opt_dif_line', param=git_diff_line, errmsg="无法识别的参数格式"))
+        logging.warning("{method_name}({param}) --> err msg : \n\t{errmsg}".
+                        format(method_name='opt_dif_line', param=git_diff_line, errmsg="无法识别的参数格式"))
         return
     else:
         temp_git_diff_line: str = git_diff_line[31:]
@@ -404,90 +416,121 @@ def opt_dif_line(git_diff_line: str):
 
     if first_char == ModifyEnum.modify_addition.value:
         if verify_one_path_log_ary(path_ary):
-            issue_opt(path_ary[1])
+            try:
+                issue_opt(path_ary[1])
+            except Exception as exception:
+                logging.error("添加文件失败,请查看堆栈信息")
+                logging.exception(exception)
+                return
         else:
-            logger("增加文件失败 : " + git_diff_line)
+            logging.error("增加文件失败(意外的格式) : \n\t" + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_deletion.value:
         if verify_one_path_log_ary(path_ary):
             if ISSUES_DICTIONARY_MAP.pop[path_ary[1], True]:
-                logger("删除文件失败-2 : " + git_diff_line)
+                logging.error("删除文件失败-2 : " + git_diff_line)
         else:
-            logger("删除文件失败-1 : " + git_diff_line)
+            logging.error("删除文件失败-1 : " + git_diff_line)
             pass
 
         pass
     elif first_char == ModifyEnum.modify_modification.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
-            issue_opt(path_ary[1])
+            try:
+                issue_opt(path_ary[1])
+            except Exception as exception:
+                logging.error("更新文件失败,请查看堆栈信息")
+                logging.exception(exception)
+                return
             pass
         else:
-            logger("更新文件内容失败 : " + git_diff_line)
+            logging.error("更新文件内容失败 : " + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_file_is_unmerged.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_one_path_log_ary(path_ary):
-            issue_opt(path_ary[1])
+            try:
+                issue_opt(path_ary[1])
+            except Exception as exception:
+                logging.error("操作 unmerged 文件失败,请查看堆栈信息")
+                logging.exception(exception)
             pass
         else:
-            logger("操作 unmerged 文件失败 : " + git_diff_line)
+            logging.error("操作 unmerged 文件失败 : " + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_copy.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
-            issue_opt(path_ary[2])
+            try:
+                issue_opt(path_ary[2])
+            except Exception as exception:
+                logging.error("操作拷贝文件失败,请查看堆栈信息")
+                logging.exception(exception)
             pass
         else:
-            logger("操作拷贝文件失败 : " + git_diff_line)
+            logging.error("操作拷贝文件失败 : " + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_renaming.value:
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
-            issue_opt(path_ary[2])
+            try:
+                issue_opt(path_ary[2])
+            except Exception as exception:
+                logging.error("重命名文件文件失败,请查看堆栈信息")
+                logging.exception(exception)
             pass
         else:
-            logger("重命名文件文件失败 : " + git_diff_line)
+            logging.error("重命名文件文件失败 : " + git_diff_line)
             pass
         pass
     elif first_char == ModifyEnum.modify_change_type.value:
-        logger("未知操作 \t " + git_diff_line)
+        logging.error("未知操作 \t " + git_diff_line)
         pass
     elif first_char == ModifyEnum.modify_unknown.value:
-        logger("未知错误操作 \t " + git_diff_line)
+        logging.error("未知错误操作 \t " + git_diff_line)
         pass
+    else:
+        logging.error("未知操作 \t " + git_diff_line)
 
 
-# 加载持久化的 json 文件获取上一次操作的信息
+logging.info("\n加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 get_issues_file_dictionary_form_issue()
 
-# 获取上次操作到的那个 commit 的提交时间
+logging.info("\n获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
+logging.info("\t 从{last_commit_log_line}获取到的上次操作的时间为:\n\t\t{last_commit_time}"
+             .format(last_commit_log_line=LAST_SUCCESS_OPT_COMMIT_LOG_LINE, last_commit_time=last_commit_time))
 
-# 获取我们关心的 commit 范围(从给定时间开始, 到最后一次)
+logging.info("\n获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
+logging.info(commit_log_range)
 
-# 我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)
+logging.info("\n我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
 after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
+logging.info(after_commit_hash)
 
-# 我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)
+logging.info("\n我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
 if len(commit_log_range) > 1:
     earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
 else:
     earlier_commit_hash = None
+logging.info("\t" + earlier_commit_hash)
 
-# 从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表
+logging.info("\n从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
 git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
+logging.info("要处理的发生变化的文件列表:")
+logging.info(git_diff_line_list)
 
-# 遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)
+logging.info("\n遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
 for a_git_diff_line in git_diff_line_list:
     opt_dif_line(a_git_diff_line)
 
-# 操作完成重新持久化 json 文件
+logging.info("\n操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 persistence_file_dictionary_map_to_issue()
 
 exit('手动终止,没有含义')
