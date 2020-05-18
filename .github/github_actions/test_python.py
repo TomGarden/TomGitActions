@@ -64,7 +64,7 @@ GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
 ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
-ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 2)
+ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 9)
 
 # 命令行输出文件的间隔符
 git_log_line_separator = "···@/@···"
@@ -120,22 +120,31 @@ repo = github_obj.get_repo(GITHUB_REPO)
 def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
     _issue = repo.get_issue(_issue_number)
 
-    json_str = _issue.body.decode('unicode-escape')
-    if json_str is None or \
-            not isinstance(json_str, str) or \
-            len(json_str) < 10:
-        logger("首次提交内容, 玩的开心 ~ ~")
-        return
+    json_str = _issue.body
 
     global JSON_OBJ
     global LAST_SUCCESS_OPT_COMMIT_LOG_LINE
     global ISSUES_DICTIONARY_MAP
 
-    json_str = json_str[7:len(json_str) - 3]
+    if len(json_str) > 0 and \
+            json_str.startswith('```json') and \
+            json_str.endswith('```'):
+        print("get_issues_file_dictionary_form_issue(_issue_number)   SUCCESS(with json content)   ···"
+              .format(_issue_number))
 
-    JSON_OBJ = json.loads(json_str)
-    LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
-    ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
+        json_str = json_str[7:len(json_str) - 3]
+
+        JSON_OBJ = json.loads(json_str)
+        LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
+        ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
+
+    elif not isinstance(json_str, str) or \
+            len(json_str) == 0:
+        print("get_issues_file_dictionary_form_issue(_issue_number)   SUCCESS(content is empty)   ···"
+              .format(_issue_number))
+
+    else:
+        raise Exception("get_issues_file_dictionary_form_issue(_issue_number)   FAILED(unknown err)")
 
 
 def get_issues_file_dictionary_form_file(file_name: str):
@@ -313,7 +322,6 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
     # 发起更新 issue 请求
     request_data = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape')
     response = requests.patch(_issue_url, headers=patch_header, data=request_data)
-
 
     update_result = response.status_code == 200
 

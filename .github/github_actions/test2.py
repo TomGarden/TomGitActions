@@ -28,10 +28,19 @@ issue_obj = {
     'title': "我是标题",
     'body': "我是内容, English"
 }
-issue_obj_str: str = json.dumps(issue_obj)
+issue_obj_str: str = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape')
 if isinstance(issue_obj_str, str):
     print("dumps之后是 str")
 else:
     print("dumps之后非 str")
 print(os.getcwd())
-print(issue_obj_str.encode('utf-8').decode('unicode_escape'))
+print(issue_obj_str)
+
+issue_obj_str = "```json{content}```".format(content=issue_obj_str)
+print(issue_obj_str)
+
+if issue_obj_str.startswith('```json') and \
+        issue_obj_str.endswith('```'):
+    print("巴拉巴拉")
+else:
+    print("小魔仙")
