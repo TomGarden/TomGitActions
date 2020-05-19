@@ -172,9 +172,9 @@ def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER)
     """将 json 信息持久化到指定 issue"""
     JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY] = commit_log_range[0]
     JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY] = ISSUES_DICTIONARY_MAP
-    json_str = json.dumps(JSON_OBJ)
+    json_str = json.dumps(JSON_OBJ, ensure_ascii=False, indent=2)
 
-    issue_update(_issue_number, "映射文件", "```json{json_str}```".format(json_str=json_str))
+    issue_update(_issue_number, "映射文件", "```json\n{json_str}\n```".format(json_str=json_str))
 
 
 def get_hash_form_commit_log_line(last_success_opt_commit_log_line: str) -> str or None:
@@ -329,7 +329,7 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
     # 先设置代理在发起请
 
     # 发起更新 issue 请求
-    request_data = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape').encode('utf-8')
+    request_data = json.dumps(issue_obj, ensure_ascii=False, indent=2).encode()
     response = requests.patch(_issue_url, headers=patch_header, data=request_data)
 
     update_result = response.status_code == 200
