@@ -131,3 +131,18 @@ steps:
 19. 如果使用项目内的某个文件作为配置文件还尚可, 但是自主生成的操作数据还是放到不干预提交过程的地方比较舒服吧, 我们放在 issues 中或者新建分支是合适的, 那我们就放在 issues 中
 20. 允许默认不配置 issues_file_dictionary 对应的 issue , 在这种情况下应该自助生成 , 而不是报异常
 21. 日志色彩和格式暂时就放下吧
+
+
+
+
+## 0x05. 关于测试
+对于文件的修改
+- *符合预期* modify_addition = 'A'
+- *符合预期* modify_deletion = 'D'
+- *未覆盖*  modify_copy = 'C'
+- *未覆盖*  modify_modification = 'M'
+- *未覆盖*  modify_renaming = 'R'
+- *未覆盖*  modify_file_is_unmerged = 'U'
+- *未覆盖*  
+- *未覆盖*  modify_change_type = 'T'
+- *未覆盖*  modify_unknown = 'X'
