@@ -403,7 +403,7 @@ def opt_dif_line(git_diff_line: str):
     :return:
     """
 
-    logging.info("即将操作:" + git_diff_line)
+    logging.info("正在操作😁:" + git_diff_line)
 
     if git_diff_line is None or \
             not isinstance(git_diff_line, str) or \
@@ -422,9 +422,6 @@ def opt_dif_line(git_diff_line: str):
 
     first_char = temp_git_diff_line[0]
     path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
-
-    if first_char != ModifyEnum.modify_deletion.value:
-        return
 
     if first_char == ModifyEnum.modify_addition.value:
         if verify_one_path_log_ary(path_ary):
