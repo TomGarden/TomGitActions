@@ -329,7 +329,7 @@ def issue_update(_issue_number: int, _issue_title: str = None, _issue_body: str 
     # 先设置代理在发起请
 
     # 发起更新 issue 请求
-    request_data = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape')
+    request_data = json.dumps(issue_obj).encode('utf-8').decode('unicode_escape').encode('utf-8')
     response = requests.patch(_issue_url, headers=patch_header, data=request_data)
 
     update_result = response.status_code == 200
@@ -414,6 +414,9 @@ def opt_dif_line(git_diff_line: str):
     first_char = temp_git_diff_line[0]
     path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
 
+    if first_char != ModifyEnum.modify_deletion.value:
+        return
+
     if first_char == ModifyEnum.modify_addition.value:
         if verify_one_path_log_ary(path_ary):
             try:
@@ -428,7 +431,7 @@ def opt_dif_line(git_diff_line: str):
         pass
     elif first_char == ModifyEnum.modify_deletion.value:
         if verify_one_path_log_ary(path_ary):
-            if ISSUES_DICTIONARY_MAP.pop[path_ary[1], True]:
+            if ISSUES_DICTIONARY_MAP.pop(path_ary[1], True):
                 logging.error("删除文件失败-2 : " + git_diff_line)
         else:
             logging.error("删除文件失败-1 : " + git_diff_line)
