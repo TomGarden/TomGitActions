@@ -12,3 +12,16 @@ print(request_data)
 
 request_data2 = json.dumps(ISSUES_DICTIONARY_MAP)
 print(request_data2)
+
+
+def test() -> []:
+    return None
+
+
+test_ary = test()
+if test_ary is None:
+    print(2546347)
+if isinstance(test_ary, type(None)):
+    print("124")
+else:
+    print("456")

@@ -220,6 +220,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     :return: 返回我们关心的 commit 区间,
                 result[0] 表示时间上最晚的提交
                 result[1] 表示时间上最早的提交
+             返回值可能为空数组, 如果数组为空表示没有更新提交内容, 应该停止脚本运行
     """
 
     args = ["git", "log", "--date=format:%Y-%m-%d %H:%M:%S %z",
@@ -243,6 +244,14 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
         return None
 
     line_array: [] = stdout.split(git_log_line_separator_newline)
+
+    if len(line_array) > 0:
+        index: int = len(line_array) - 1
+        item = line_array[index]
+        line_array[index] = item[0:len(item) - len(git_log_line_separator)]
+
+    if len(line_array) == 1 and line_array[0] == LAST_SUCCESS_OPT_COMMIT_LOG_LINE:
+        return []
     if len(line_array) <= 2:
         return line_array
     else:
@@ -501,39 +510,41 @@ def opt_dif_line(git_diff_line: str):
         logging.error("未知操作 \t " + git_diff_line)
 
 
-logging.info("\n加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 get_issues_file_dictionary_form_issue()
 
-logging.info("\n获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
-logging.info("\t 从{last_commit_log_line}获取到的上次操作的时间为:\n\t\t{last_commit_time}"
+logging.info("\t 从 `{last_commit_log_line}` 获取到的上次操作的时间为:\t`{last_commit_time}`"
              .format(last_commit_log_line=LAST_SUCCESS_OPT_COMMIT_LOG_LINE, last_commit_time=last_commit_time))
 
-logging.info("\n获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+logging.info("\t获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
 logging.info(commit_log_range)
+if commit_log_range is None or len(commit_log_range) == 0:
+    exit("未检测到更新内容, action 停止运行")
 
-logging.info("\n我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
+logging.info("\t我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
 after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
 logging.info(after_commit_hash)
 
-logging.info("\n我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
+logging.info("\t我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
 if len(commit_log_range) > 1:
     earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
 else:
     earlier_commit_hash = None
-logging.info("\t" + earlier_commit_hash)
+logging.info("\t{}".format(earlier_commit_hash))
 
-logging.info("\n从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
+logging.info("\t从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
 git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
 logging.info("要处理的发生变化的文件列表:")
 logging.info(git_diff_line_list)
 
-logging.info("\n遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
+logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
 for a_git_diff_line in git_diff_line_list:
     opt_dif_line(a_git_diff_line)
 
-logging.info("\n操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 persistence_file_dictionary_map_to_issue()
 
 exit('手动终止,没有含义')
