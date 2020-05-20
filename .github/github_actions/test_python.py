@@ -507,6 +507,52 @@ def opt_dif_line(git_diff_line: str):
         logging.error("未知操作 \t " + git_diff_line)
 
 
+def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
+    """
+    将一个文件路径和 issue_ignore 规则进行匹配
+    我们能操作的内容前提为:
+    1. 文件完整路径
+    2. 忽略规则
+
+    我们可以操作的实际内容为:
+    1. 我们的匹配规则包含任意字符其中
+        - 斜杠(`/`)视为路径
+        - 星号(`*`)视为除斜杠(`/`)外的任意不限长度字符串
+        - 问号(`/`)视为除斜杠(`/`)外的任意单个字符
+
+    :param path_str:  文件路径
+    :return: true, 二者匹配 , 文件应该被忽略
+             false,  不匹配 , 文件不应该被忽略
+    """
+
+    if path_str is None or \
+            len(path_str) == 0:
+        # 无效内容应该被忽略
+        return True
+
+    if issue_ignore_ary is None or \
+            len(issue_ignore_ary) == 0:
+        return False
+
+    for issue_ignore in issue_ignore_ary:
+        if match_issue_ignore_ary(path_str, issue_ignore):
+            # 只要有一个匹配就忽略该文件
+            return True
+
+    return False
+
+
+def match_issue_ignore_ary(path_str: str, issue_ignore: []) -> bool:
+    """
+
+    :param path_str:
+    :param issue_ignore:
+    :return: true, 二者匹配 , 文件应该被忽略
+             false,  不匹配 , 文件不应该被忽略
+    """
+    re.match("", path_str)
+
+
 logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 get_issues_file_dictionary_form_issue()
 

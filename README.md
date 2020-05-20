@@ -131,6 +131,7 @@ steps:
 19. 如果使用项目内的某个文件作为配置文件还尚可, 但是自主生成的操作数据还是放到不干预提交过程的地方比较舒服吧, 我们放在 issues 中或者新建分支是合适的, 那我们就放在 issues 中
 20. 允许默认不配置 issues_file_dictionary 对应的 issue , 在这种情况下应该自助生成 , 而不是报异常
 21. 日志色彩和格式暂时就放下吧
+22. 关于删除指定 issue : gitHub api v3 暂时不支持此操作, V4 可以了, 这个问题放一放, 如果有必要在深入研究 
 
 
 
@@ -146,3 +147,43 @@ steps:
 - *未覆盖*  
 - *未覆盖*  modify_change_type = 'T'
 - *未覆盖*  modify_unknown = 'X'
+
+
+## 0x06. 关于 issue_ignore 字段的内容
+- 目的是 : 操作者可以通过配置这一字段控制自己的发布的内容
+- 手段是 : 模仿 [gitignore](https://git-scm.com/docs/gitignore)
+- 效果是 : gitignore 所容纳规则的一个子集(没有完全实现 gitignore 的规则)
+
+### 6.1. issue_ignore 规则(摘自 [gitignore](https://git-scm.com/docs/gitignore))
+PATTERN FORMAT
+- The slash / is used as the directory separator. 
+  Separators may occur at the beginning, middle or end of the .gitignore search pattern.
+  - 斜杠(`/`)是文件路径分隔符. 斜杠(`/`)可能出现于匹配文本的开始,中间和结尾.
+  
+- If there is a separator at the beginning or middle (or both) of the pattern, 
+  then the pattern is relative to the directory level of the particular .gitignore file itself. 
+  Otherwise the pattern may also match at any level below the .gitignore level.
+  - 如果斜杠(`/`)在开始或中间(或者开始和中间都出现), 那么匹配文本和 .gitignore 所在路径相关(只匹配该路径下(一层)的内容).
+    否则匹配该路径下任意子集的内容
+  
+- If there is a separator at the end of the pattern then the pattern will only match directories, 
+  otherwise the pattern can match both files and directories.
+  - 如果斜杠在匹配字符串的末尾将仅匹配文件夹, 其他情况匹配文件和文件夹.
+  
+- An asterisk "*" matches anything except a slash. 
+  The character "?" matches any one character except "/". 
+  The range notation, e.g. [a-zA-Z], can be used to match one of the characters in a range. 
+  See fnmatch(3) and the FNM_PATHNAME flag for a more detailed description.
+  - 星号(`*`)匹配除斜杠(`/`)之外的任何内容.
+    问号(`?`)匹配除斜杠(`/`)之外的任何一个字符.
+    
+### 6.2. `6.1` 内容略显复杂我们尝试简化下
+我们能操作的内容前提为:
+1. 文件完整路径
+2. 忽略规则
+
+我们可以操作的实际内容为:
+1. 我们的匹配规则包含任意字符其中
+    - 斜杠(`/`)视为路径
+    - 星号(`*`)视为除斜杠(`/`)外的任意不限长度字符串
+    - 问号(`/`)视为除斜杠(`/`)外的任意单个字符
