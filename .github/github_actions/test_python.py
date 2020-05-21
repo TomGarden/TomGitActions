@@ -550,7 +550,8 @@ def match_issue_ignore_ary(path_str: str, issue_ignore: []) -> bool:
     :return: true, 二者匹配 , 文件应该被忽略
              false,  不匹配 , 文件不应该被忽略
     """
-    re.match("", path_str)
+    test_re_str = ""
+    re.match($, path_str)
 
 
 logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
