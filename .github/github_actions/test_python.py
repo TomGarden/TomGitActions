@@ -73,7 +73,7 @@ GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
 ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
-ISSUES_IGNORE_ARRAY_FILE = os.getenv('ISSUES_IGNORE_ARRAY_FILE', 'issues_ignore.json')
+ISSUES_IGNORE_ARRAY_FILE = os.getenv('ISSUES_IGNORE_ARRAY_FILE', '.github/github_actions/issues_ignore.json')
 ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 9)
 
 # 命令行输出文件的间隔符
@@ -163,7 +163,7 @@ def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
 def get_issues_file_dictionary_form_file(file_name: str):
     issues_dictionary_map_file_obj = pathlib.Path(file_name)
     if issues_dictionary_map_file_obj.exists():
-        with open(file_name, encoding='utf-8', mode='r') as file:
+        with open(issues_dictionary_map_file_obj, encoding='utf-8', mode='r') as file:
             global JSON_OBJ
             global LAST_SUCCESS_OPT_COMMIT_LOG_LINE
             global ISSUES_DICTIONARY_MAP
@@ -175,9 +175,11 @@ def get_issues_file_dictionary_form_file(file_name: str):
 def get_issues_ignore_array_from_file(file_name: str):
     issues_ignore_array_file_obj = pathlib.Path(file_name)
     if issues_ignore_array_file_obj.exists():
-        with open(file_name, encoding='utf-8', mode='r') as file:
+        with open(issues_ignore_array_file_obj, encoding='utf-8', mode='r') as file:
             global ISSUES_IGNORE_ARRAY
             ISSUES_IGNORE_ARRAY = json.load(file)
+
+    print(ISSUES_IGNORE_ARRAY)
 
 
 def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER):
@@ -504,7 +506,7 @@ def opt_dif_line(git_diff_line: str):
         path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
             try:
-                issue_opt(path_ary[2])
+                issue_opt(path_ary[1], path_ary[2])
             except Exception as exception:
                 logging.error("重命名文件文件失败,请查看堆栈信息")
                 logging.exception(exception)
@@ -553,6 +555,9 @@ def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
 logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 get_issues_file_dictionary_form_issue()
 
+logging.info("\t加载忽略规则>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+get_issues_ignore_array_from_file(ISSUES_IGNORE_ARRAY_FILE)
+
 logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
 logging.info("\t 从 `{last_commit_log_line}` 获取到的上次操作的时间为:\t`{last_commit_time}`"
@@ -566,7 +571,7 @@ if commit_log_range is None or len(commit_log_range) == 0:
 
 logging.info("\t我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
 after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
-logging.info(after_commit_hash)
+logging.info("\t{}".format(after_commit_hash))
 
 logging.info("\t我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
 if len(commit_log_range) > 1:
