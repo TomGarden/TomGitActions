@@ -73,6 +73,7 @@ GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
 ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
+ISSUES_IGNORE_ARRAY_FILE = os.getenv('ISSUES_IGNORE_ARRAY_FILE', 'issues_ignore.json')
 ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 9)
 
 # 命令行输出文件的间隔符
@@ -90,6 +91,9 @@ ISSUES_DICTIONARY_MAP_KEY = "issues_dictionary_map_key"
 JSON_OBJ = {}
 ISSUES_DICTIONARY_MAP = {}
 LAST_SUCCESS_OPT_COMMIT_LOG_LINE = ""
+
+# issue 忽略文件的数组
+ISSUES_IGNORE_ARRAY = []
 
 
 class ModifyEnum(enum.Enum):
@@ -166,6 +170,14 @@ def get_issues_file_dictionary_form_file(file_name: str):
             JSON_OBJ = json.load(file)
             LAST_SUCCESS_OPT_COMMIT_LOG_LINE = JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY]
             ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
+
+
+def get_issues_ignore_array_from_file(file_name: str):
+    issues_ignore_array_file_obj = pathlib.Path(file_name)
+    if issues_ignore_array_file_obj.exists():
+        with open(file_name, encoding='utf-8', mode='r') as file:
+            global ISSUES_IGNORE_ARRAY
+            ISSUES_IGNORE_ARRAY = json.load(file)
 
 
 def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER):
@@ -364,6 +376,10 @@ def issue_opt(new_file: str, old_file: str = None):
     :return:
     """
 
+    if match_issue_ignore_ary(new_file, ISSUES_IGNORE_ARRAY):
+        logging.debug("文件:{file}被所忽略".format(file=new_file))
+        return
+
     if new_file is None or len(new_file) == 0:
         raise Exception("异常参数: {}".format(new_file))
 
@@ -509,17 +525,9 @@ def opt_dif_line(git_diff_line: str):
 
 def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
     """
-    将一个文件路径和 issue_ignore 规则进行匹配
-    我们能操作的内容前提为:
-    1. 文件完整路径
-    2. 忽略规则
+    当前值做简单的文件路径字符串匹配
 
-    我们可以操作的实际内容为:
-    1. 我们的匹配规则包含任意字符其中
-        - 斜杠(`/`)视为路径
-        - 星号(`*`)视为除斜杠(`/`)外的任意不限长度字符串
-        - 问号(`/`)视为除斜杠(`/`)外的任意单个字符
-
+    :param issue_ignore_ary: 忽略路径
     :param path_str:  文件路径
     :return: true, 二者匹配 , 文件应该被忽略
              false,  不匹配 , 文件不应该被忽略
@@ -535,23 +543,11 @@ def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
         return False
 
     for issue_ignore in issue_ignore_ary:
-        if match_issue_ignore_ary(path_str, issue_ignore):
+        if path_str.startswith(issue_ignore):
             # 只要有一个匹配就忽略该文件
             return True
 
     return False
-
-
-def match_issue_ignore_ary(path_str: str, issue_ignore: []) -> bool:
-    """
-
-    :param path_str:
-    :param issue_ignore:
-    :return: true, 二者匹配 , 文件应该被忽略
-             false,  不匹配 , 文件不应该被忽略
-    """
-    test_re_str = ""
-    re.match($, path_str)
 
 
 logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
