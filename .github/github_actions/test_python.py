@@ -52,7 +52,7 @@ from ignore_dir.debug_utils import debug_init_os_env
 #
 
 
-logging.root.setLevel(logging.NOTSET)
+logging.root.setLevel(logging.INFO)
 logging.debug("细节信息，仅当诊断问题时适用。")
 logging.info("确认程序按预期运行")
 logging.warning("表明有已经或即将发生的意外（例如：磁盘空间不足）。程序仍按预期进行")
@@ -178,8 +178,6 @@ def get_issues_ignore_array_from_file(file_name: str):
         with open(issues_ignore_array_file_obj, encoding='utf-8', mode='r') as file:
             global ISSUES_IGNORE_ARRAY
             ISSUES_IGNORE_ARRAY = json.load(file)
-
-    print(ISSUES_IGNORE_ARRAY)
 
 
 def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER):
@@ -379,7 +377,7 @@ def issue_opt(new_file: str, old_file: str = None):
     """
 
     if match_issue_ignore_ary(new_file, ISSUES_IGNORE_ARRAY):
-        logging.debug("文件:{file}被所忽略".format(file=new_file))
+        logging.info("\t文件:{file}被忽略".format(file=new_file))
         return
 
     if new_file is None or len(new_file) == 0:
@@ -411,6 +409,10 @@ def issue_opt(new_file: str, old_file: str = None):
         else:
             _issue = repo.create_issue(_issue_title, _issue_body)
             ISSUES_DICTIONARY_MAP[new_file] = _issue.number
+
+
+def replace_markdown_links(input_str: str) -> str:
+    pass
 
 
 def opt_dif_line(git_diff_line: str):
@@ -456,6 +458,8 @@ def opt_dif_line(git_diff_line: str):
     elif first_char == ModifyEnum.modify_deletion.value:
         if verify_one_path_log_ary(path_ary):
             if ISSUES_DICTIONARY_MAP.pop(path_ary[1], True):
+                logging.error("删除文件成功-2 : " + git_diff_line)
+            else:
                 logging.error("删除文件失败-2 : " + git_diff_line)
         else:
             logging.error("删除文件失败-1 : " + git_diff_line)
@@ -552,47 +556,49 @@ def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
     return False
 
 
-logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-get_issues_file_dictionary_form_issue()
+def man():
+    logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    get_issues_file_dictionary_form_issue()
 
-logging.info("\t加载忽略规则>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-get_issues_ignore_array_from_file(ISSUES_IGNORE_ARRAY_FILE)
+    logging.info("\t加载忽略规则>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    get_issues_ignore_array_from_file(ISSUES_IGNORE_ARRAY_FILE)
 
-logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
-logging.info("\t 从 `{last_commit_log_line}` 获取到的上次操作的时间为:\t`{last_commit_time}`"
-             .format(last_commit_log_line=LAST_SUCCESS_OPT_COMMIT_LOG_LINE, last_commit_time=last_commit_time))
+    logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
+    logging.info("\t 从 `{last_commit_log_line}` 获取到的上次操作的时间为:\t`{last_commit_time}`"
+                 .format(last_commit_log_line=LAST_SUCCESS_OPT_COMMIT_LOG_LINE, last_commit_time=last_commit_time))
 
-logging.info("\t获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
-logging.info(commit_log_range)
-if commit_log_range is None or len(commit_log_range) == 0:
-    exit("未检测到更新内容, action 停止运行")
+    logging.info("\t获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
+    logging.info(commit_log_range)
+    if commit_log_range is None or len(commit_log_range) == 0:
+        exit("未检测到更新内容, action 停止运行")
 
-logging.info("\t我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
-after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
-logging.info("\t{}".format(after_commit_hash))
+    logging.info("\t我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
+    after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
+    logging.info("\t{}".format(after_commit_hash))
 
-logging.info("\t我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
-if len(commit_log_range) > 1:
-    earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
-else:
-    earlier_commit_hash = None
-logging.info("\t{}".format(earlier_commit_hash))
+    logging.info("\t我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
+    if len(commit_log_range) > 1:
+        earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
+    else:
+        earlier_commit_hash = None
+    logging.info("\t{}".format(earlier_commit_hash))
 
-logging.info("\t从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
-git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
-logging.info("要处理的发生变化的文件列表:")
-logging.info(git_diff_line_list)
+    logging.info("\t从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
+    git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
+    logging.info("要处理的发生变化的文件列表:")
+    logging.info(git_diff_line_list)
 
-logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
-for a_git_diff_line in git_diff_line_list:
-    opt_dif_line(a_git_diff_line)
+    logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
+    for a_git_diff_line in git_diff_line_list:
+        opt_dif_line(a_git_diff_line)
 
-logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-persistence_file_dictionary_map_to_issue()
+    logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    persistence_file_dictionary_map_to_issue()
 
-exit('手动终止,没有含义')
+    exit('手动终止,没有含义')
+
 
 #######################################################################################
 #############                         重构逻辑分割线                     #################
