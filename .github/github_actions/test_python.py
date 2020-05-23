@@ -393,6 +393,7 @@ def issue_opt(new_file: str, old_file: str = None):
 
     with open(file_desc, encoding='utf-8', mode='r') as file_stream:
         _issue_body = file_stream.read()
+        _issue_body = replace_markdown_links(_issue_body, file_desc.parent.as_posix())
         file_stream.close()
 
     if old_file is None or \
@@ -411,8 +412,12 @@ def issue_opt(new_file: str, old_file: str = None):
             ISSUES_DICTIONARY_MAP[new_file] = _issue.number
 
 
-def replace_markdown_links(input_str: str) -> str:
-    pass
+def replace_markdown_links(input_str: str, path: str) -> str:
+    pattern = r'\[(.*?)\]\((?!http)(.*?)\)'
+    re_format = "[\\1](https://raw.githubusercontent.com/{}/{}/{}/\\2)".format(
+        GITHUB_REPO, GITHUB_BRANCH, path)
+    result = re.sub(pattern, re_format, input_str, flags=re.M)
+    return result
 
 
 def opt_dif_line(git_diff_line: str):
