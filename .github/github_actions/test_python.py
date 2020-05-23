@@ -413,7 +413,7 @@ def issue_opt(new_file: str, old_file: str = None):
 
 
 def replace_markdown_links(input_str: str, path: str) -> str:
-    pattern = r'\[(.*?)\]\((?!http)(.*?)\)'
+    pattern = r'[^`]\[(.*?)\]\((?!http)(.*?)\)'
     re_format = "[\\1](https://raw.githubusercontent.com/{}/{}/{}/\\2)".format(
         GITHUB_REPO, GITHUB_BRANCH, path)
     result = re.sub(pattern, re_format, input_str, flags=re.M)
@@ -561,49 +561,47 @@ def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
     return False
 
 
-def man():
-    logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    get_issues_file_dictionary_form_issue()
+logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+get_issues_file_dictionary_form_issue()
 
-    logging.info("\t加载忽略规则>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    get_issues_ignore_array_from_file(ISSUES_IGNORE_ARRAY_FILE)
+logging.info("\t加载忽略规则>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+get_issues_ignore_array_from_file(ISSUES_IGNORE_ARRAY_FILE)
 
-    logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
-    logging.info("\t 从 `{last_commit_log_line}` 获取到的上次操作的时间为:\t`{last_commit_time}`"
-                 .format(last_commit_log_line=LAST_SUCCESS_OPT_COMMIT_LOG_LINE, last_commit_time=last_commit_time))
+logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)
+logging.info("\t 从 `{last_commit_log_line}` 获取到的上次操作的时间为:\t`{last_commit_time}`"
+             .format(last_commit_log_line=LAST_SUCCESS_OPT_COMMIT_LOG_LINE, last_commit_time=last_commit_time))
 
-    logging.info("\t获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
-    logging.info(commit_log_range)
-    if commit_log_range is None or len(commit_log_range) == 0:
-        exit("未检测到更新内容, action 停止运行")
+logging.info("\t获取我们关心的 commit 范围(从给定时间开始, 到最后一次)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+commit_log_range: [] = get_current_opt_commit_log_line_range(last_commit_time)
+logging.info(commit_log_range)
+if commit_log_range is None or len(commit_log_range) == 0:
+    exit("未检测到更新内容, action 停止运行")
 
-    logging.info("\t我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
-    after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
-    logging.info("\t{}".format(after_commit_hash))
+logging.info("\t我们关心的时间上较晚的 commit hash (也就是最后一次提交的 commit hash)>>>>>>>>>>>>>>>>>>>")
+after_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[0])
+logging.info("\t{}".format(after_commit_hash))
 
-    logging.info("\t我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
-    if len(commit_log_range) > 1:
-        earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
-    else:
-        earlier_commit_hash = None
-    logging.info("\t{}".format(earlier_commit_hash))
+logging.info("\t我们关心的时间上较早的 commit hash (也就是上一次 action 操作的 commit hash)>>>>>>>>>>>>>")
+if len(commit_log_range) > 1:
+    earlier_commit_hash: str = get_hash_form_commit_log_line(commit_log_range[1])
+else:
+    earlier_commit_hash = None
+logging.info("\t{}".format(earlier_commit_hash))
 
-    logging.info("\t从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
-    git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
-    logging.info("要处理的发生变化的文件列表:")
-    logging.info(git_diff_line_list)
+logging.info("\t从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
+git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
+logging.info("要处理的发生变化的文件列表:")
+logging.info(git_diff_line_list)
 
-    logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
-    for a_git_diff_line in git_diff_line_list:
-        opt_dif_line(a_git_diff_line)
+logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
+for a_git_diff_line in git_diff_line_list:
+    opt_dif_line(a_git_diff_line)
 
-    logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    persistence_file_dictionary_map_to_issue()
+logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+persistence_file_dictionary_map_to_issue()
 
-    exit('手动终止,没有含义')
-
+exit('手动终止,没有含义')
 
 #######################################################################################
 #############                         重构逻辑分割线                     #################
