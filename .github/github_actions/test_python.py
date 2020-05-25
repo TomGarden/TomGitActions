@@ -420,6 +420,14 @@ def replace_markdown_links(input_str: str, path: str) -> str:
     return result
 
 
+def get_page_header(path: str):
+    pass
+
+
+def get_page_footer(path: str):
+    pass
+
+
 def opt_dif_line(git_diff_line: str):
     """
     操作 git diff 的返回行
