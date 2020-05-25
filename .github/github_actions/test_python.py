@@ -73,7 +73,9 @@ GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
 ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
-ISSUES_IGNORE_ARRAY_FILE = os.getenv('ISSUES_IGNORE_ARRAY_FILE', '.github/github_actions/issues_ignore.json')
+ISSUES_CONFIG = os.getenv('ISSUES_CONFIG', '.github/github_actions/issues_config.json')
+ISSUES_FOOTER_PATH = os.getenv('ISSUES_FOOTER_PATH', '.github/github_actions/issues_footer.md')
+ISSUES_HEADER_PATH = os.getenv('ISSUES_HEADER_PATH', '.github/github_actions/issues_header.md')
 ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 9)
 
 # 命令行输出文件的间隔符
@@ -83,17 +85,20 @@ git_diff_line_prefix = "///"
 git_diff_line_separator = "\x00"
 git_diff_line_separator_newline = git_diff_line_separator + "\n"
 
-# 持久化的 json 文件中的 key 字符串
-LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY = "last_success_opt_commit_log_line_key"
-ISSUES_DICTIONARY_MAP_KEY = "issues_dictionary_map_key"
-
 # issues 和 repository 文件的映射
 JSON_OBJ = {}
+ISSUES_DICTIONARY_MAP_KEY = "issues_dictionary_map_key"
 ISSUES_DICTIONARY_MAP = {}
+LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY = "last_success_opt_commit_log_line_key"
 LAST_SUCCESS_OPT_COMMIT_LOG_LINE = ""
 
 # issue 忽略文件的数组
+ISSUES_IGNORE_ARRAY_KEY = "issues_ignore"
 ISSUES_IGNORE_ARRAY = []
+
+# 支持的文件类型数组
+ISSUES_SUPPORT_FILE_TYPE_ARRAY_KEY = "issues_support_file_type"
+ISSUES_SUPPORT_FILE_TYPE_ARRAY = []
 
 
 class ModifyEnum(enum.Enum):
@@ -172,12 +177,15 @@ def get_issues_file_dictionary_form_file(file_name: str):
             ISSUES_DICTIONARY_MAP = JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY]
 
 
-def get_issues_ignore_array_from_file(file_name: str):
-    issues_ignore_array_file_obj = pathlib.Path(file_name)
-    if issues_ignore_array_file_obj.exists():
-        with open(issues_ignore_array_file_obj, encoding='utf-8', mode='r') as file:
+def get_issues_config_from_file(file_name: str):
+    issues_configfile_obj = pathlib.Path(file_name)
+    if issues_configfile_obj.exists():
+        with open(issues_configfile_obj, encoding='utf-8', mode='r') as file:
             global ISSUES_IGNORE_ARRAY
-            ISSUES_IGNORE_ARRAY = json.load(file)
+            global ISSUES_SUPPORT_FILE_TYPE_ARRAY
+            json_obj = json.load(file)
+            ISSUES_IGNORE_ARRAY = json_obj[ISSUES_IGNORE_ARRAY_KEY]
+            ISSUES_SUPPORT_FILE_TYPE_ARRAY = json_obj[ISSUES_SUPPORT_FILE_TYPE_ARRAY_KEY]
 
 
 def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER):
@@ -394,6 +402,9 @@ def issue_opt(new_file: str, old_file: str = None):
     with open(file_desc, encoding='utf-8', mode='r') as file_stream:
         _issue_body = file_stream.read()
         _issue_body = replace_markdown_links(_issue_body, file_desc.parent.as_posix())
+        _issue_header = read_file_text(ISSUES_HEADER_PATH)
+        _issue_footer = read_file_text(ISSUES_FOOTER_PATH)
+        _issue_body = _issue_header + _issue_body + _issue_footer
         file_stream.close()
 
     if old_file is None or \
@@ -420,12 +431,12 @@ def replace_markdown_links(input_str: str, path: str) -> str:
     return result
 
 
-def get_page_header(path: str):
-    pass
-
-
-def get_page_footer(path: str):
-    pass
+def read_file_text(path: str) -> str:
+    file = pathlib.Path(path)
+    if file.exists():
+        return file.read_text()
+    else:
+        return ""
 
 
 def opt_dif_line(git_diff_line: str):
@@ -436,7 +447,7 @@ def opt_dif_line(git_diff_line: str):
     :return:
     """
 
-    logging.info("正在操作😁:" + git_diff_line)
+    logging.info("正在操作😁[没有消息就是好消息]:" + git_diff_line)
 
     if git_diff_line is None or \
             not isinstance(git_diff_line, str) or \
@@ -453,25 +464,31 @@ def opt_dif_line(git_diff_line: str):
     def verify_two_path_log_ary(two_path_ary: []) -> bool:
         return len(two_path_ary) == 4 and len(two_path_ary[3]) == 0
 
+    def opt_first_path(modify: str):
+        if verify_one_path_log_ary(path_ary):
+            try:
+                if match_issue_support_file_type(path_ary[1], ISSUES_SUPPORT_FILE_TYPE_ARRAY):
+                    issue_opt(path_ary[1])
+                else:
+                    logging.info("文件类型原因忽略文件: " + path_ary[1])
+            except Exception as exception:
+                logging.error(modify + "失败,请查看堆栈信息")
+                logging.exception(exception)
+                return
+        else:
+            logging.error(modify + "失败(意外的格式) : \n\t" + git_diff_line)
+            pass
+        pass
+
     first_char = temp_git_diff_line[0]
     path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
 
     if first_char == ModifyEnum.modify_addition.value:
-        if verify_one_path_log_ary(path_ary):
-            try:
-                issue_opt(path_ary[1])
-            except Exception as exception:
-                logging.error("添加文件失败,请查看堆栈信息")
-                logging.exception(exception)
-                return
-        else:
-            logging.error("增加文件失败(意外的格式) : \n\t" + git_diff_line)
-            pass
-        pass
+        opt_first_path("添加文件")
     elif first_char == ModifyEnum.modify_deletion.value:
         if verify_one_path_log_ary(path_ary):
             if ISSUES_DICTIONARY_MAP.pop(path_ary[1], True):
-                logging.error("删除文件成功-2 : " + git_diff_line)
+                logging.error("删除文件成功 : " + git_diff_line)
             else:
                 logging.error("删除文件失败-2 : " + git_diff_line)
         else:
@@ -480,37 +497,16 @@ def opt_dif_line(git_diff_line: str):
 
         pass
     elif first_char == ModifyEnum.modify_modification.value:
-        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
-        if verify_one_path_log_ary(path_ary):
-            try:
-                issue_opt(path_ary[1])
-            except Exception as exception:
-                logging.error("更新文件失败,请查看堆栈信息")
-                logging.exception(exception)
-                return
-            pass
-        else:
-            logging.error("更新文件内容失败 : " + git_diff_line)
-            pass
-        pass
+        opt_first_path("修改文件")
     elif first_char == ModifyEnum.modify_file_is_unmerged.value:
-        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
-        if verify_one_path_log_ary(path_ary):
-            try:
-                issue_opt(path_ary[1])
-            except Exception as exception:
-                logging.error("操作 unmerged 文件失败,请查看堆栈信息")
-                logging.exception(exception)
-            pass
-        else:
-            logging.error("操作 unmerged 文件失败 : " + git_diff_line)
-            pass
-        pass
+        opt_first_path("unmerged 文件")
     elif first_char == ModifyEnum.modify_copy.value:
-        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
             try:
-                issue_opt(path_ary[2])
+                if match_issue_support_file_type(path_ary[2], ISSUES_SUPPORT_FILE_TYPE_ARRAY):
+                    issue_opt(path_ary[2])
+                else:
+                    logging.info("文件类型原因忽略拷贝文件: " + path_ary[2])
             except Exception as exception:
                 logging.error("操作拷贝文件失败,请查看堆栈信息")
                 logging.exception(exception)
@@ -520,10 +516,12 @@ def opt_dif_line(git_diff_line: str):
             pass
         pass
     elif first_char == ModifyEnum.modify_renaming.value:
-        path_ary: [] = temp_git_diff_line.split(git_diff_line_separator)
         if verify_two_path_log_ary(path_ary):
             try:
-                issue_opt(path_ary[1], path_ary[2])
+                if match_issue_support_file_type(path_ary[2], ISSUES_SUPPORT_FILE_TYPE_ARRAY):
+                    issue_opt(path_ary[1], path_ary[2])
+                else:
+                    logging.info("文件类型原因忽略重命名文件: " + path_ary[2])
             except Exception as exception:
                 logging.error("重命名文件文件失败,请查看堆栈信息")
                 logging.exception(exception)
@@ -569,11 +567,21 @@ def match_issue_ignore_ary(path_str: str, issue_ignore_ary: []) -> bool:
     return False
 
 
+def match_issue_support_file_type(file_path: str, support_file_type: []) -> bool:
+    """
+    file_path 是否以 support_file_type 中某个元素为结尾
+    :param file_path:  先转为小写字符在做比较
+    :param support_file_type:
+    :return: true 文件是被支持的类型应该处理, false 文件类型不被支持
+    """
+    return file_path.lower().endswith(tuple(support_file_type))
+
+
 logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 get_issues_file_dictionary_form_issue()
 
 logging.info("\t加载忽略规则>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-get_issues_ignore_array_from_file(ISSUES_IGNORE_ARRAY_FILE)
+get_issues_config_from_file(ISSUES_CONFIG)
 
 logging.info("\t获取上次操作到的那个 commit 的提交时间>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 last_commit_time: str = get_time_form_commit_log_line(LAST_SUCCESS_OPT_COMMIT_LOG_LINE)

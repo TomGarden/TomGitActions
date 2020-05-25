@@ -1,0 +1,15 @@
+{
+  "issues_ignore_note": "忽略的文件夹, 这些文件中的内容变化, 将被本项目忽略不计, 区分大小写",
+  "issues_ignore": [
+    ".git/",
+    ".github/",
+    ".gitignore",
+    ".idea/",
+    "ignore_dir/"
+  ],
+  "issues_support_file_type_note": "文件名会倍转换为小写, 再和列表内容对别, 事实上, 当前只支持 markdown 格式 😁",
+  "issues_support_file_type": [
+    ".md",
+    ".markdown"
+  ]
+}
