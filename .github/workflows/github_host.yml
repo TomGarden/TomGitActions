@@ -32,7 +32,10 @@ jobs:
         pwd
         ls -a -l
         git --version
+        echo "---------------------------"
         git log --pretty=format:%H···@/@···%cd···@/@···%s···@/@···  --date='format:%Y-%m-%d %H:%M:%S %z' --since='2020-05-22 22:07:39 +0800'
+        echo "---------------------------"
+        git log --pretty=format:%H···@/@···%cd···@/@···%s···@/@···  --date='format:%Y-%m-%d %H:%M:%S %z'
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
       run: bash ./.github/github_actions/install_dependence_macos.sh
