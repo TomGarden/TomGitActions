@@ -1,6 +1,5 @@
 import logging
+import os
 
-ary = [".markdown", "md"]
-ext = tuple(ary)
-restu = "asdfasdf.MD".lower().endswith(ext)
-print(restu)
+print(os.getcwd())
+print(os.path.abspath(os.path.join(os.getcwd(), "../..")))
