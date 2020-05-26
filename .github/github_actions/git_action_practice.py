@@ -12,8 +12,14 @@ from github import Github
 logging.root.setLevel(logging.INFO)
 
 
+print(os.getcwd())
+print(os.path.abspath(os.path.join(os.getcwd(), "../..")))
+print(os.getcwd())
+
+
 # 设置脚本的当前工作目录
 os.chdir(os.path.abspath(os.path.join(os.getcwd(), "../..")))
+print(os.getcwd())
 
 GITHUB_API = "https://api.github.com"
 GITHUB_ACTION_NAME = os.environ['GITHUB_ACTION']
