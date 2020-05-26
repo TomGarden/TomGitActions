@@ -38,24 +38,6 @@ jobs:
     - name: check requests
       run: pip3 show requests
 
-  call_python_script: # 一个 jobs.<job_id> 它的值必须是作业配置的名称映像
-                   # 在本文中对应的就是 git-issues-blog.py 作业配置
-
-    needs: install_dependence_job
-
-    runs-on: macos-latest
-
-    steps: # 一个 job(作业) 可以分为若干 step(步骤)
-    # 检出(获取)这个仓库的一个release 版本
-
-    - uses: actions/checkout@v2
-      # 定义环境变量
-      with:
-        ref: master
-
-    - name: check requests
-      run: pip3 show requests
-
     - name: Publish Issues
       run: python3 ./.github/github_actions/git_action_practice.py
       env:
