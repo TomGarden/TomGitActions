@@ -207,6 +207,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     stderr: str = completed_process.stderr
 
     logging.info(args)
+    logging.info(stdout)
 
     if stderr is not None and \
             len(stderr) > 0:
@@ -573,7 +574,7 @@ logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或�
 for a_git_diff_line in git_diff_line_list:
     opt_dif_line(a_git_diff_line)
 
-logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-persistence_file_dictionary_map_to_issue()
+# logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+# persistence_file_dictionary_map_to_issue()
 
-print('脚本执行完毕 , 手动终止')
+print('脚本执行完毕 , 不做持久化 json 操作 , 手动终止')
