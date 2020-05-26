@@ -11,13 +11,9 @@ from github import Github
 
 logging.root.setLevel(logging.INFO)
 
-print(os.getcwd())
-print(os.path.abspath(os.path.join(os.getcwd(), "..")))
-
-exit("测试代码运行路径")
 
 # 设置脚本的当前工作目录
-os.chdir("/Volumes/document/script_language/TomGitActions")
+os.chdir(os.path.abspath(os.path.join(os.getcwd(), "../..")))
 
 GITHUB_API = "https://api.github.com"
 GITHUB_ACTION_NAME = os.environ['GITHUB_ACTION']
@@ -83,12 +79,6 @@ class ModifyEnum(enum.Enum):
 
     modify_change_type = 'T'
     modify_unknown = 'X'
-
-
-# github object
-# github_obj = Github(login_or_token=GITHUB_TOKEN)
-github_obj = Github(login_or_token=GITHUB_TOKEN, base_url=GITHUB_API)
-repo = github_obj.get_repo(GITHUB_REPO)
 
 
 def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
@@ -533,6 +523,10 @@ def match_issue_support_file_type(file_path: str, support_file_type: []) -> bool
     return file_path.lower().endswith(tuple(support_file_type))
 
 
+logging.info("\t登陆 github  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+github_obj = Github(login_or_token=GITHUB_TOKEN, base_url=GITHUB_API)
+repo = github_obj.get_repo(GITHUB_REPO)
+
 logging.info("\t加载持久化的 json 文件获取上一次操作的信息>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 get_issues_file_dictionary_form_issue()
 
@@ -573,4 +567,4 @@ for a_git_diff_line in git_diff_line_list:
 logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 persistence_file_dictionary_map_to_issue()
 
-exit('脚本执行完毕 , 手动终止')
+print('脚本执行完毕 , 手动终止')
