@@ -1,5 +1,5 @@
 # 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-name: self_host
+name: github_host
 
 
 # 下文含义为 *******************************************
@@ -29,7 +29,7 @@ jobs:
 
     - name: print machine info
       run: |
-        echo "假装正在安装依赖"
+        pwd
         ls -l
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
