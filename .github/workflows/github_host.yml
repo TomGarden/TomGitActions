@@ -31,7 +31,6 @@ jobs:
       run: |
         pwd
         ls -a -l
-        git --help
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
       run: bash ./.github/github_actions/install_dependence_macos.sh
