@@ -12,7 +12,7 @@ from github import Github
 logging.root.setLevel(logging.INFO)
 
 print(os.getcwd())
-print(os.path.abspath(os.path.join(os.getcwd(), "../..")))
+print(os.path.abspath(os.path.join(os.getcwd(), "..")))
 
 exit("测试代码运行路径")
 

@@ -30,7 +30,7 @@ jobs:
     - name: print machine info
       run: |
         pwd
-        ls -l
+        ls -a -l
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
       run: bash ./.github/github_actions/install_dependence_macos.sh
