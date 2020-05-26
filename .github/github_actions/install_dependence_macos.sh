@@ -20,7 +20,11 @@ function install_apps() {
 }
 
 # 安装软件
+echo 'install jq python3 .......................................'
 install_apps  jq  python3
+echo 'python3 -m ensurepip .......................................'
 python3 -m ensurepip
+echo 'pip3 --no-cache-dir install --upgrade pip ..................'
 pip3 --no-cache-dir install --upgrade pip
+echo 'pip3 install requests PyGithub pathlib .....................'
 pip3 install requests PyGithub pathlib
