@@ -206,6 +206,8 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     stdout: str = completed_process.stdout
     stderr: str = completed_process.stderr
 
+    logging.info(args)
+
     if stderr is not None and \
             len(stderr) > 0:
         logging.warning("{method_name}({param}) --> err msg : \n\t{errmsg}".
@@ -216,6 +218,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
         return None
 
     line_array: [] = stdout.split(git_log_line_separator_newline)
+    logging.info(line_array)
 
     if len(line_array) > 0:
         index: int = len(line_array) - 1
