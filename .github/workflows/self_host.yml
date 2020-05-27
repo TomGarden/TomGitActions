@@ -1,5 +1,5 @@
 # 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-name: github_host
+name: sefl_host
 
 
 # 下文含义为 *******************************************
@@ -26,6 +26,7 @@ jobs:
       # 定义环境变量
       with:
         ref: master
+        fetch-depth: 0 #
 
     - name: print machine info
       run: |

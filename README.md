@@ -265,3 +265,8 @@ PATTERN FORMAT
     1. 嵌套 `[[[[]()]()]()]()`
     2. 连续(可忽略) `[](https://) []()`
     3. [```]
+
+
+
+
+github-actions-git-log-only-output-one-line
