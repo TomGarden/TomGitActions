@@ -26,7 +26,7 @@ jobs:
       # 定义环境变量
       with:
         ref: master
-        fetch-depth: 0 #
+        fetch-depth: 0 #拉取更多数据
 
     - name: print machine info
       run: |
