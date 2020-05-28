@@ -26,17 +26,13 @@ jobs:
       # 定义环境变量
       with:
         ref: master
-        fetch-depth: 0 #拉取更多数据
+        fetch-depth: 0 #拉取更多git 历史数据
 
     - name: print machine info
       run: |
         pwd
         ls -a -l
         git --version
-        echo "---------------------------"
-        git --no-pager log --pretty=format:%H···@/@···%cd···@/@···%s···@/@···  --date='format:%Y-%m-%d %H:%M:%S %z' --since='2020-05-22 22:07:39 +0800'
-        echo "---------------------------"
-        git --no-pager log --pretty=format:%H···@/@···%cd···@/@···%s···@/@···  --date='format:%Y-%m-%d %H:%M:%S %z'
 
     - name: Install dependencies # 步骤显示在 GitHub 上的名称。
       run: bash ./.github/github_actions/install_dependence_ubuntu.sh
