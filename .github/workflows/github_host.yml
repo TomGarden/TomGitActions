@@ -47,4 +47,5 @@ jobs:
           ISSUES_CONFIG:  '.github/github_actions/issues_config.json'
           ISSUES_FOOTER_PATH:  '.github/github_actions/issues_footer.md'
           ISSUES_HEADER_PATH:  '.github/github_actions/issues_header.md'
-          ISSUES_MAP_FILE_NUMBER:  9
+          # 只接受整数
+          ISSUES_MAP_FILE_NUMBER:  '9'

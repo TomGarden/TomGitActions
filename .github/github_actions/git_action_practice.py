@@ -27,7 +27,12 @@ GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 ISSUES_CONFIG = os.getenv('ISSUES_CONFIG', '.github/github_actions/issues_config.json')
 ISSUES_FOOTER_PATH = os.getenv('ISSUES_FOOTER_PATH', '.github/github_actions/issues_footer.md')
 ISSUES_HEADER_PATH = os.getenv('ISSUES_HEADER_PATH', '.github/github_actions/issues_header.md')
-ISSUES_MAP_FILE_NUMBER = os.getenv('ISSUES_MAP_FILE_NUMBER', 9)
+issues_map_file_number = os.getenv('ISSUES_MAP_FILE_NUMBER', 9)
+ISSUES_MAP_FILE_NUMBER: int
+if isinstance(issues_map_file_number, str):
+    ISSUES_MAP_FILE_NUMBER = int(issues_map_file_number)
+else:
+    ISSUES_MAP_FILE_NUMBER = issues_map_file_number
 
 # 命令行输出文件的间隔符
 git_log_line_separator = "···@/@···"
