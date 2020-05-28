@@ -1,3 +1,5 @@
+模仿自 : https://github.com/Sep0lkit/git-issues-blog 
+
 ## 0x00. 进度
 1. 尝试直接在本地创建 yaml 文件并设置 py 文件与之关联。
     - 但是上传代码后 actions 列表中没有任何内容
