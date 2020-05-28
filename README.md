@@ -147,7 +147,6 @@ steps:
 - *未覆盖*  modify_modification = 'M'
 - *未覆盖*  modify_renaming = 'R'
 - *未覆盖*  modify_file_is_unmerged = 'U'
-- *未覆盖*  
 - *未覆盖*  modify_change_type = 'T'
 - *未覆盖*  modify_unknown = 'X'
 
@@ -271,3 +270,5 @@ PATTERN FORMAT
 
 
 github-actions-git-log-only-output-one-line
+
+> [正则匹配链接`[]()`语法尚有局限性 , 如有疑虑可查看本文原文](https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{GITHUB_BRANCH}/{file})

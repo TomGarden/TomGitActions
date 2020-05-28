@@ -25,6 +25,6 @@ install_apps  jq  python3
 echo 'python3 -m ensurepip .......................................'
 python3 -m ensurepip
 echo 'pip3 --no-cache-dir install --upgrade pip ..................'
-pip3 --no-cache-dir install --upgrade pip
+sudo pip3 --no-cache-dir install --upgrade pip
 echo 'pip3 install requests PyGithub pathlib .....................'
-pip3 install requests PyGithub pathlib
+sudo pip3 install requests PyGithub pathlib
