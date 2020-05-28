@@ -265,10 +265,7 @@ PATTERN FORMAT
     1. 嵌套 `[[[[]()]()]()]()`
     2. 连续(可忽略) `[](https://) []()`
     3. [```]
+    
+![2020-05-28_22:12:17.jpg](images/2020-05-28_22:12:17.jpg)
 
 
-
-
-github-actions-git-log-only-output-one-line
-
-> [正则匹配链接`[]()`语法尚有局限性 , 如有疑虑可查看本文原文](https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{GITHUB_BRANCH}/{file})
