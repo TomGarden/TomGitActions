@@ -605,4 +605,4 @@ for a_git_diff_line in git_diff_line_list:
 logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 persistence_file_dictionary_map_to_issue()
 
-print('脚本执行完毕 , 不做持久化 json 操作 , 手动终止')
+print('脚本执行完毕 , 手动终止')
