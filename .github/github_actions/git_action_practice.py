@@ -10,8 +10,6 @@ import github
 import requests
 from github import Github
 
-from ignore_dir.debug_utils import debug_init_os_env
-
 logging.root.setLevel(logging.INFO)
 
 # 设置脚本的当前工作目录
