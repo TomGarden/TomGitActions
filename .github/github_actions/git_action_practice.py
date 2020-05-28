@@ -15,8 +15,8 @@ from ignore_dir.debug_utils import debug_init_os_env
 logging.root.setLevel(logging.INFO)
 
 # 设置脚本的当前工作目录
-os.chdir("/Volumes/document/script_language/TomGitActions")
-debug_init_os_env()
+# os.chdir("/Volumes/document/script_language/TomGitActions")
+# debug_init_os_env()
 
 GITHUB_API = "https://api.github.com"
 GITHUB_ACTION_NAME = os.environ['GITHUB_ACTION']
@@ -598,7 +598,7 @@ logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或�
 for a_git_diff_line in git_diff_line_list:
     opt_dif_line(a_git_diff_line)
 
-# logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-# persistence_file_dictionary_map_to_issue()
+logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+persistence_file_dictionary_map_to_issue()
 
 print('脚本执行完毕 , 不做持久化 json 操作 , 手动终止')
