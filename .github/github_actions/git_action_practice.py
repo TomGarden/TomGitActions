@@ -6,20 +6,17 @@ import pathlib
 import re
 import subprocess
 
+import github
 import requests
 from github import Github
 
+from ignore_dir.debug_utils import debug_init_os_env
+
 logging.root.setLevel(logging.INFO)
 
-
-# logging.error(os.getcwd())
-# logging.error(os.path.abspath(os.path.join(os.getcwd(), "../..")))
-
-
-
 # 设置脚本的当前工作目录
-# os.chdir(os.path.abspath(os.path.join(os.getcwd(), "..")))
-# logging.error(os.getcwd())
+os.chdir("/Volumes/document/script_language/TomGitActions")
+debug_init_os_env()
 
 GITHUB_API = "https://api.github.com"
 GITHUB_ACTION_NAME = os.environ['GITHUB_ACTION']
@@ -207,7 +204,7 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
     stderr: str = completed_process.stderr
 
     logging.info(args)
-    logging.info(stdout)
+    logging.info(stdout + "\n")
 
     if stderr is not None and \
             len(stderr) > 0:
@@ -219,7 +216,6 @@ def get_current_opt_commit_log_line_range(_last_commit_time: str) -> []:
         return None
 
     line_array: [] = stdout.split(git_log_line_separator_newline)
-    logging.info(line_array)
 
     if len(line_array) > 0:
         index: int = len(line_array) - 1
@@ -266,8 +262,6 @@ def get_diff_from_commits(_after_commit_hash: str, _earlier_commit_hash: str) ->
 
     stdout: str = completed_process.stdout
     stderr: str = completed_process.stderr
-
-    logging.info(stdout)
 
     if stderr is not None and \
             len(stderr) > 0:
@@ -363,17 +357,45 @@ def issue_opt(new_file: str, old_file: str = None):
         _issue_body = _issue_header + _issue_body + _issue_footer
         file_stream.close()
 
+    def issue_update_or_create(
+            _issue_raw_path: str, _issue_number: int, _issue_title: str = None, _issue_body: str = None) -> bool:
+        """
+        更新指定 issue >>> `https://developer.github.com/v3/issue/#update-an-issue`
+        如果更新过程中发现指定 issue 已经被删除了, 就重新创建一个 issue
+
+        :param _issue_raw_path: 表示这个 issue_number 对应的文件路径
+        :param _issue_number: 当前 issue 对应的 issue id
+        :param _issue_title: issue 标题
+        :param _issue_body: issue 内容
+        :return: true 更新内容成功 , false 更新出错
+        """
+
+        try:
+            issue_update(_issue_number, _issue_title, _issue_body)
+        except github.GithubException as github_exception:
+            if github_exception.status == 410:
+                logging.warning("更新文件[{_issue_raw_path}](issue_num:{_issue_number}), 的时候发现文件已经被删除了, 于是尝试重新创建一个 issue "
+                                .format(_issue_raw_path=_issue_raw_path, _issue_number=_issue_number))
+                _issue = repo.create_issue(_issue_title, _issue_body)
+                ISSUES_DICTIONARY_MAP[new_file] = _issue.number
+            else:
+                raise github_exception
+        except Exception as exception:
+            raise exception
+
     if old_file is None or \
             len(old_file) == 0:
         if new_file in ISSUES_DICTIONARY_MAP:
-            update_result = issue_update(ISSUES_DICTIONARY_MAP[new_file], _issue_title, _issue_body)
+            issue_number = ISSUES_DICTIONARY_MAP[new_file]
+            issue_update_or_create(new_file, issue_number, _issue_title, _issue_body)
         else:
             _issue = repo.create_issue(_issue_title, _issue_body)
             ISSUES_DICTIONARY_MAP[new_file] = _issue.number
         pass
     else:
         if old_file in ISSUES_DICTIONARY_MAP:
-            update_result = issue_update(ISSUES_DICTIONARY_MAP[old_file], _issue_title, _issue_body)
+            issue_number = ISSUES_DICTIONARY_MAP[old_file]
+            issue_update_or_create(old_file, issue_number, _issue_title, _issue_body)
         else:
             _issue = repo.create_issue(_issue_title, _issue_body)
             ISSUES_DICTIONARY_MAP[new_file] = _issue.number
@@ -403,8 +425,6 @@ def opt_dif_line(git_diff_line: str):
     :return:
     """
 
-    logging.info("正在操作😁[没有消息就是好消息]:" + git_diff_line)
-
     if git_diff_line is None or \
             not isinstance(git_diff_line, str) or \
             len(git_diff_line) < 31:
@@ -413,6 +433,8 @@ def opt_dif_line(git_diff_line: str):
         return
     else:
         temp_git_diff_line: str = git_diff_line[31:]
+
+    logging.info("正在操作😁[没有消息就是好消息]:" + temp_git_diff_line)
 
     def verify_one_path_log_ary(one_path_ary: []) -> bool:
         return len(one_path_ary) == 3 and len(one_path_ary[2]) == 0
@@ -444,7 +466,7 @@ def opt_dif_line(git_diff_line: str):
     elif first_char == ModifyEnum.modify_deletion.value:
         if verify_one_path_log_ary(path_ary):
             if ISSUES_DICTIONARY_MAP.pop(path_ary[1], True):
-                logging.error("删除文件成功 : " + git_diff_line)
+                logging.error("假装删除文件成功 : " + git_diff_line)
             else:
                 logging.error("删除文件失败-2 : " + git_diff_line)
         else:
@@ -568,13 +590,15 @@ logging.info("\t{}".format(earlier_commit_hash))
 logging.info("\t从两个 commit hash 通过 git diff 命令获取在两个 commit 之间发生变化的文件列表>>>>>>>>>>>>")
 git_diff_line_list: [] = get_diff_from_commits(after_commit_hash, earlier_commit_hash)
 logging.info("要处理的发生变化的文件列表:")
-logging.info(git_diff_line_list)
+for a_git_diff_line in git_diff_line_list:
+    logging.info(a_git_diff_line)
+logging.info("\n")
 
 logging.info("\t遍历变化的文件日志行,逐行处理变化的文件,(或更新现有文件,或创建新文件)>>>>>>>>>>>>>>>>>>>>>>>>")
 for a_git_diff_line in git_diff_line_list:
     opt_dif_line(a_git_diff_line)
 
-logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-persistence_file_dictionary_map_to_issue()
+# logging.info("\t操作完成重新持久化 json 文件>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+# persistence_file_dictionary_map_to_issue()
 
 print('脚本执行完毕 , 不做持久化 json 操作 , 手动终止')
