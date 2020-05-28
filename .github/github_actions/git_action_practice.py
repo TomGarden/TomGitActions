@@ -350,11 +350,9 @@ def issue_opt(new_file: str, old_file: str = None):
     with open(file_desc, encoding='utf-8', mode='r') as file_stream:
         _issue_body = file_stream.read()
         _issue_body = replace_markdown_links(_issue_body, file_desc.parent.as_posix())
-        _issue_warring = "> [正则匹配链接`[]()`语法上有局限性 , 如有疑虑可查看**本文**原文](https://github.com/{GITHUB_USER}/{" \
-                         "GITHUB_REPO}/blob/{GITHUB_BRANCH}/{file})".format(GITHUB_USER=GITHUB_USER,
-                                                                            GITHUB_REPO=GITHUB_REPO,
-                                                                            GITHUB_BRANCH=GITHUB_BRANCH,
-                                                                            file=file_desc.as_posix())
+        _issue_warring = "> [正则匹配链接`[]()`语法上有局限性 , 如有疑虑可查看**本文**原文](https://github.com/{GITHUB_REPO}/blob/{" \
+                         "GITHUB_BRANCH}/{file})".format(GITHUB_USER=GITHUB_USER, GITHUB_REPO=GITHUB_REPO,
+                                                         GITHUB_BRANCH=GITHUB_BRANCH, file=file_desc.as_posix())
         _issue_header = read_file_text(ISSUES_HEADER_PATH)
         _issue_footer = read_file_text(ISSUES_FOOTER_PATH)
         _issue_body = _issue_header + _issue_warring + "\n\n" + _issue_body + _issue_footer
