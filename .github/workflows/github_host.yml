@@ -22,23 +22,29 @@ jobs:
 
     steps: # 一个 job(作业) 可以分为若干 step(步骤)
       # 检出(获取)这个仓库的一个release 版本
-    - uses: actions/checkout@v2
-      # 定义环境变量
-      with:
-        ref: master
-        # 用于拉取更多历史内容
-        fetch-depth: 0
+      - uses: actions/checkout@v2
+        # 定义环境变量
+        with:
+          ref: master
+          # 用于拉取更多历史内容
+          fetch-depth: 0
 
-    - name: print machine info
-      run: |
-        pwd
-        ls -a -l
+      - name: print machine info
+        run: |
+          pwd
+          ls -a -l
 
-    - name: Install dependencies # 步骤显示在 GitHub 上的名称。
-      run: bash ./.github/github_actions/install_dependence_macos.sh
+      - name: Install dependencies # 步骤显示在 GitHub 上的名称。
+        run: bash ./.github/github_actions/install_dependence_macos.sh
 
-    - name: Publish Issues
-      run: python3 ./.github/github_actions/git_action_practice.py
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        POSTS_PATH: 'posts'
+      - name: Publish Issues
+        run: python3 ./.github/github_actions/git_action_practice.py
+        env:
+          # 这里的环境变量可以在脚本中使用
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 下述配置可定制
+          GITHUB_BRANCH:  'master'
+          ISSUES_CONFIG:  '.github/github_actions/issues_config.json'
+          ISSUES_FOOTER_PATH:  '.github/github_actions/issues_footer.md'
+          ISSUES_HEADER_PATH:  '.github/github_actions/issues_header.md'
+          ISSUES_MAP_FILE_NUMBER:  9

@@ -24,12 +24,10 @@ GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 GITHUB_REPO = os.environ['GITHUB_REPOSITORY']
 GITHUB_USER = os.environ['GITHUB_REPOSITORY_OWNER']
 GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
-POSTS_PATH = os.getenv('POSTS_PATH', '../posts')
-ISSUES_DICTIONARY_MAP_FILE = os.getenv('ISSUES_DICTIONARY_MAP_FILE', '_issues_dictionary_map.json')
 ISSUES_CONFIG = os.getenv('ISSUES_CONFIG', '.github/github_actions/issues_config.json')
 ISSUES_FOOTER_PATH = os.getenv('ISSUES_FOOTER_PATH', '.github/github_actions/issues_footer.md')
 ISSUES_HEADER_PATH = os.getenv('ISSUES_HEADER_PATH', '.github/github_actions/issues_header.md')
-ISSUES_NUMBER = os.getenv('ISSUES_NUMBER', 9)
+ISSUES_MAP_FILE_NUMBER = os.getenv('ISSUES_MAP_FILE_NUMBER', 9)
 
 # 命令行输出文件的间隔符
 git_log_line_separator = "···@/@···"
@@ -82,7 +80,7 @@ class ModifyEnum(enum.Enum):
     modify_unknown = 'X'
 
 
-def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_NUMBER):
+def get_issues_file_dictionary_form_issue(_issue_number: int = ISSUES_MAP_FILE_NUMBER):
     _issue = repo.get_issue(_issue_number)
 
     json_str = _issue.body
@@ -135,7 +133,7 @@ def get_issues_config_from_file(file_name: str):
             ISSUES_SUPPORT_FILE_TYPE_ARRAY = json_obj[ISSUES_SUPPORT_FILE_TYPE_ARRAY_KEY]
 
 
-def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_NUMBER):
+def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_MAP_FILE_NUMBER):
     """将 json 信息持久化到指定 issue"""
     JSON_OBJ[LAST_SUCCESS_OPT_COMMIT_LOG_LINE_KEY] = commit_log_range[0]
     JSON_OBJ[ISSUES_DICTIONARY_MAP_KEY] = ISSUES_DICTIONARY_MAP
