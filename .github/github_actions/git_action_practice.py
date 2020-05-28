@@ -406,7 +406,7 @@ def issue_opt(new_file: str, old_file: str = None):
 
 
 def replace_markdown_links(input_str: str, path: str) -> str:
-    pattern = r'[^`]\[(.*?)\]\((?!http)(.*?)\)[^`]'
+    pattern = r'\[(.*?)\]\((?!http)(.*?)\)'
     re_format = "[\\1](https://raw.githubusercontent.com/{}/{}/{}/\\2)".format(
         GITHUB_REPO, GITHUB_BRANCH, path)
     result = re.sub(pattern, re_format, input_str, flags=re.M)
