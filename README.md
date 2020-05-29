@@ -68,6 +68,8 @@ def replace_markdown_links(input_str: str, path: str) -> str:
 
 证明文件链接有一定可用性
 - [制作过程草稿 · 诸多未竟](.github/document/制造过程草稿.md)
+    - 这里有我想过但没有试试的细节们
+    - 这里有我碰到的困难和解决办法们
 
 证明图片链接有一定可用性
 - [随意截图](images/2020-05-28_22:12:17.jpg)
