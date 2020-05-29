@@ -44,7 +44,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # 下述配置可定制
           GITHUB_BRANCH:  'master'
-          ISSUES_CONFIG:  '.github/github_actions/issues_config.json'
           ISSUES_FOOTER_PATH:  '.github/github_actions/issues_footer.md'
           ISSUES_HEADER_PATH:  '.github/github_actions/issues_header.md'
           # 只接受整数
