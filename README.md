@@ -72,4 +72,4 @@ def replace_markdown_links(input_str: str, path: str) -> str:
     - 这里有我碰到的困难和解决办法们
 
 证明图片链接有一定可用性
-- [随意截图](images/2020-05-28_22:12:17.jpg)
+- ![随意截图](images/2020-05-28_22:12:17.jpg)
