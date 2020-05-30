@@ -8,6 +8,7 @@
 
 ## 0x01. 局限性
 
+### 1.1. markdown 链接语法替换问题
 对 markdown 中的链接语法 `[](http 巴拉巴拉)` 支持的不够完善 .
 
 当前是通过 EL(Expression Language) 表达式完成的匹配与替换
@@ -26,6 +27,38 @@ def replace_markdown_links(input_str: str, path: str) -> str:
 
 关于这个规则如果看到的你有更好的改进方案 , 我很乐意修正这个实现细节
 
+
+### 1.2. git 文件变化识别问题
+```python
+
+class ModifyEnum(enum.Enum):
+    """
+    规范: https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-git-diff-filesltpatterngt82308203
+
+    下述修改我们
+        知道怎么触发的标记为 [√]
+        不知道怎么触发的标记为 [x] //未成功测试处理的修改类型, 通过 git diff 文档给定的格式进行操作
+
+    [√] A: addition of a file
+    [x] C: copy of a file into a new one
+    [√] D: deletion of a file
+    [√] M: modification of the contents or mode of a file
+    [√] R: renaming of a file
+    [x] T: change in the type of the file
+    [x] U: file is unmerged (you must complete the merge before it can be committed)
+    [x] X: "unknown" change type (most probably a bug, please report it)
+    """
+    modify_addition = 'A'
+    modify_copy = 'C'
+    modify_deletion = 'D'
+    modify_modification = 'M'
+    modify_renaming = 'R'
+    modify_file_is_unmerged = 'U'
+
+    modify_change_type = 'T'
+    modify_unknown = 'X'
+
+```
 
 ## 0x02. 文件内容
 
