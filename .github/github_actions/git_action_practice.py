@@ -130,12 +130,24 @@ def get_issues_file_dictionary_form_file(file_name: str):
 def get_issues_config_from_file(file_name: str):
     issues_configfile_obj = pathlib.Path(file_name)
     if issues_configfile_obj.exists():
-        with open(issues_configfile_obj, encoding='utf-8', mode='r') as file:
-            global ISSUES_IGNORE_ARRAY
-            global ISSUES_SUPPORT_FILE_TYPE_ARRAY
-            json_obj = json.load(file)
-            ISSUES_IGNORE_ARRAY = json_obj[ISSUES_IGNORE_ARRAY_KEY]
-            ISSUES_SUPPORT_FILE_TYPE_ARRAY = json_obj[ISSUES_SUPPORT_FILE_TYPE_ARRAY_KEY]
+        try:
+            with open(issues_configfile_obj, encoding='utf-8', mode='r') as file:
+                global ISSUES_IGNORE_ARRAY
+                global ISSUES_SUPPORT_FILE_TYPE_ARRAY
+                json_obj = json.load(file)
+                if ISSUES_IGNORE_ARRAY_KEY in json_obj:
+                    ISSUES_IGNORE_ARRAY = json_obj[ISSUES_IGNORE_ARRAY_KEY]
+                else:
+                    logging.warning("ISSUES_CONFIG 对应的文件中没有字段:{}".format(ISSUES_IGNORE_ARRAY_KEY))
+                if ISSUES_SUPPORT_FILE_TYPE_ARRAY in json_obj:
+                    ISSUES_SUPPORT_FILE_TYPE_ARRAY = json_obj[ISSUES_SUPPORT_FILE_TYPE_ARRAY_KEY]
+                else:
+                    logging.warning("ISSUES_CONFIG 对应的文件中没有字段:{}".format(ISSUES_SUPPORT_FILE_TYPE_ARRAY))
+        except Exception as exception:
+            logging.error("读取配置文件'{}'失败".format(file_name))
+            logging.exception(exception)
+    else:
+        logging.warning("未设置配置文件: 'ISSUES_CONFIG', '.github/github_actions/issues_config.json' ")
 
 
 def persistence_file_dictionary_map_to_issue(_issue_number: int = ISSUES_MAP_FILE_NUMBER):

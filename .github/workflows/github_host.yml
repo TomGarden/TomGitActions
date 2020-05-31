@@ -1,5 +1,5 @@
 # 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-name: github_host
+name: github_host-action-issue-blog
 
 
 # 下文含义为 *******************************************
@@ -16,7 +16,7 @@ on: # 触发工作流程的 GitHub 事件的名称。
 # 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
 jobs:
 
-  install_dependence_job:
+  publish_your_repository_files:
 
     runs-on: macos-latest
 
@@ -42,9 +42,10 @@ jobs:
         env:
           # 这里的环境变量可以在脚本中使用
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 下述配置可定制
+          # 必选配置项
+          ISSUES_MAP_FILE_NUMBER:  '9'
+          # 可选配置项
           GITHUB_BRANCH:  'master'
+          ISSUES_CONFIG: '.github/github_actions/issues_config.json'
           ISSUES_FOOTER_PATH:  '.github/github_actions/issues_footer.md'
           ISSUES_HEADER_PATH:  '.github/github_actions/issues_header.md'
-          # 只接受整数
-          ISSUES_MAP_FILE_NUMBER:  '9'

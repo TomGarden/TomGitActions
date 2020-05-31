@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -15,3 +16,12 @@ def replace_markdown_links(input_str: str, path: str) -> str:
 
 print(string)
 print(replace_markdown_links(string, "path"))
+
+test_str = "{}"
+json_obj = json.loads(test_str)
+if "123" in json_obj:
+    print( "true")
+else:
+    print("234")
+ISSUES_IGNORE_ARRAY: [] = json_obj["123"]
+ISSUES_SUPPORT_FILE_TYPE_ARRAY: [] = json_obj["456"]
