@@ -27,7 +27,7 @@ GITHUB_BRANCH = os.getenv('GITHUB_BRANCH', 'master')
 ISSUES_CONFIG = os.getenv('ISSUES_CONFIG', '.github/github_actions/issues_config.json')
 ISSUES_FOOTER_PATH = os.getenv('ISSUES_FOOTER_PATH', '.github/github_actions/issues_footer.md')
 ISSUES_HEADER_PATH = os.getenv('ISSUES_HEADER_PATH', '.github/github_actions/issues_header.md')
-issues_map_file_number = os.getenv('ISSUES_MAP_FILE_NUMBER', 9)
+issues_map_file_number = os.environ['ISSUES_MAP_FILE_NUMBER']
 ISSUES_MAP_FILE_NUMBER: int
 if isinstance(issues_map_file_number, str):
     ISSUES_MAP_FILE_NUMBER = int(issues_map_file_number)
@@ -464,7 +464,7 @@ def opt_dif_line(git_diff_line: str):
                 if match_issue_support_file_type(path_ary[1], ISSUES_SUPPORT_FILE_TYPE_ARRAY):
                     issue_opt(path_ary[1])
                 else:
-                    logging.info("文件类型原因忽略文件: " + path_ary[1])
+                    logging.info("\t文件类型原因忽略文件: " + path_ary[1])
             except Exception as exception:
                 logging.error(modify + "失败,请查看堆栈信息")
                 logging.exception(exception)
