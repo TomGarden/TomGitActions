@@ -110,7 +110,8 @@ class ModifyEnum(enum.Enum):
                   ISSUES_HEADER_PATH:  '.github/github_actions/issues_header.md'
         ```
     
-    - (Optional) repository-root/./github/github_actions
+    - (Optional) repository-root/.github/github_actions/issues_footer.md
+    - (Optional) repository-root/.github/github_actions/issues_header.md
 
 ### 3.2. 比较复杂的方式(可控性高)
 我还没有仔细研究
