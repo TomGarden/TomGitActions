@@ -66,55 +66,8 @@ class ModifyEnum(enum.Enum):
 
 ## 0x03. 关于使用方式
 
-### 3.1. 比较简单的方式
-1. github create a public repository 
-    - 创建一个 issue 作为映射文件的存放地址(注意 issues 内容为空) 
-    - 记下 issue 编号
-2. create directory and files
-    - clone the repository
-    - repository-root/.github/github_host.yml  :
-        ```yaml
-        # 工作流程的名称。 GitHub 在仓库的操作页面上显示工作流程的名称。
-        name: github_host-action-issue-blog
-        
-        
-        # 下文含义为 *******************************************
-        #     当 master 分支发生 push 事件时针对 paths
-        #     中指定的文件时执行 jobs(作业)
-        # *****************************************************
-        on: # 触发工作流程的 GitHub 事件的名称。
-          push:
-            branches:
-              - master
-        
-        # 工作流程运行包括一项或多项作业。
-        # 作业默认是并行运行。
-        # 要按顺序运行作业，您可以使用 <job_id>needs 关键词在其他作业上定义依赖项。
-        jobs:
-        
-          publish_your_repository_files:
-      
-            runs-on: macos-latest
-        
-            steps: # 一个 job(作业) 可以分为若干 step(步骤)
-      
-              - uses: TomGarden/TomGitActions@0.1.0
-                  # 这里的环境变量可以在脚本中使用
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  # 必选配置项
-                  ISSUES_MAP_FILE_NUMBER:  '9'
-                  ISSUES_CONFIG: '.github/github_actions/issues_config.json'
-                  # 可选配置项
-                  GITHUB_BRANCH:  'master'
-                  ISSUES_FOOTER_PATH:  '.github/github_actions/issues_footer.md'
-                  ISSUES_HEADER_PATH:  '.github/github_actions/issues_header.md'
-        ```
-    
-    - (Optional) repository-root/.github/github_actions/issues_footer.md
-    - (Optional) repository-root/.github/github_actions/issues_header.md
+我看是有简单的给人用的方式的, 我还没学会, 又不想学了:
 
-### 3.2. 比较复杂的方式(可控性高)
-我还没有仔细研究
 1. clone repository , 将 .github 文件拷贝到自己 repository
 2. 在自己的项目手动创建一个 issue , 可以有标题, 内容一定要为空, 就是没有内容
     - 当然也可以是有内容的, 前提是你得知道自己在做什么
